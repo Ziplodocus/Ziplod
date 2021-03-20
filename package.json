@@ -1,0 +1,19 @@
+{
+  "name": "bazingabot",
+  "version": "1.0.1",
+  "description": "Haha funny go bot bot",
+  "main": "bazinga",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "HaroldHeyre",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/opus": "^0.3.3",
+    "discord.js": "^12.4.1",
+    "ffmpeg": "^0.0.4",
+    "ffmpeg-static": "^4.2.7",
+    "sodium": "^3.0.2",
+    "ytdl-core": "^4.0.3"
+  }
+}
