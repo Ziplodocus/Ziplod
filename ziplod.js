@@ -4,18 +4,25 @@ const config = require('./config.json');
 //const ytdl = require('ytdl-core');
 const { OpusEncoder } = require('@discordjs/opus');
 const fs = require('fs');
-console.log("Launching Bazinga...")
+console.log("Launching Ziplod...")
 
 // Create the encoder.
 // Specify 48kHz sampling rate and 2 channel size.
-const encoder = new OpusEncoder(48000, 2);
+//const encoder = new OpusEncoder(48000, 2);
 // Encode and decode.
 //const encoded = encoder.encode( 48000 / 100);
 //const decoded = encoder.decode( 48000 / 100);
 
 const pre = config.prefix;
-const helpText = '\n Here is a list of current commands: \n !bazinga - plays a laugh \n !sad - plays a sad \n !shush - Tell the bot off \n !fail - crashes the bot \n !help - sends for the help \n !comedy - prepare yourself \n !meme - random meme attack, optionally @ your friends \n !dbd - Sacrifice'
-//const stream = ytdl('https://www.youtube.com/watch?v=H47ow4_Cmk0&ab_channel=UsaSatsui',{filter: 'audioonly'});
+const helpText = (`Here is a list of current commands:
+	!bazinga - plays a laugh
+	!sad - plays a sad
+	!shush - Tell the bot off
+	!fail - crashes the bot
+	!help - sends for the help
+	!comedy - prepare yourself
+	!meme - random meme attack, optionally @ your friends`
+)
 
 const dudeSounds = {
 	"193531624422375424" : {join: "./dudeTracks/Zirpho.mp3", leave: ["./dudeTracks/ZirphoLeave.mp3"]},
@@ -37,11 +44,16 @@ function paramNo(param) {
 function randomNo(audio) {return Math.floor(Math.random()*paramNo(audio))};
 
 function playSound(path, voiceChannel) {
-	voiceChannel.join().then(connection => {
+	voiceChannel.join()
+	.then(connection => {
 		let dispatcher = connection.play(path);
-		dispatcher.on('end', end => {voiceChannel.leave()});
+		dispatcher.on('end', end => {
+			console.log("Is this working?")
+			voiceChannel.leave()
+		});
+	}, reason => {
+		console.log(reason)
 	})
-	.catch('end',err => console.log(err));
 }
 
 function delCommands(time,textChannel) {
@@ -61,7 +73,9 @@ client.once('ready', () => {console.log('Ready!')});
 
 
 client.on('voiceStateUpdate', (oldState, newState) => {
-	//if (client.voice.)
+	if (newState.member.user.username === client.user.username) {
+		return
+	};
 	console.log(`Voice state of ${newState.member.user.username} changed`);
 	let dude;
 	let soundPath;
@@ -163,16 +177,7 @@ client.on('message', message => {
 		case 'fail':
 			throw 'Intentional Error'
 		case 'help':
-			textChannel.send(
-			`Here is a list of current commands:
-			!bazinga - plays a laugh
-			!sad - plays a sad
-			!shush - Tell the bot off
-			!fail - crashes the bot
-			!help - sends for the help
-			!comedy - prepare yourself
-			!meme - random meme attack, optionally @ your friends`
-			);
+			textChannel.send(helpText);
 			break
 		default :
 			message.reply('\n That is not one of my many powerful commands tiny person');
