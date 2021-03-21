@@ -8,179 +8,152 @@ console.log("Launching Ziplod...")
 
 // Create the encoder.
 // Specify 48kHz sampling rate and 2 channel size.
-//const encoder = new OpusEncoder(48000, 2);
+const encoder = new OpusEncoder(48000, 2);
 // Encode and decode.
 //const encoded = encoder.encode( 48000 / 100);
 //const decoded = encoder.decode( 48000 / 100);
 
 const pre = config.prefix;
 const helpText = (`Here is a list of current commands:
-	!bazinga - plays a laugh
-	!sad - plays a sad
-	!shush - Tell the bot off
-	!fail - crashes the bot
-	!help - sends for the help
-	!comedy - prepare yourself
-	!meme - random meme attack, optionally @ your friends`
+!bazinga - plays a laugh
+!sad - plays a sad
+!shush - Tell the bot off
+!help - sends for the help
+!comedy - prepare yourself
+!meme - random meme attack, optionally @ your friends`
 )
 
-const dudeSounds = {
-	"193531624422375424" : {join: "./dudeTracks/Zirpho.mp3", leave: ["./dudeTracks/ZirphoLeave.mp3"]},
-	"206057143198154753" : {join: "./dudeTracks/Deeco.mp3", leave: ["./dudeTracks/DeecoLeave.mp3"]},
-	"345662204756099073" : {join: "./dudeTracks/Asher.mp3", leave: ["./dudeTracks/AsherLeave.mp3"]},
-	"205771975807860737" : {join: "./dudeTracks/Mafu.mp3", leave: ["./dudeTracks/MafuLeave.mp3", "./dudeTracks/MafuLeave1.mp3"]},
-	"270240517378277386" : {join: "./dudeTracks/Table.mp3", leave: [""]},
-	"162299432531001344" : {join: "./dudeTracks/Shenfield.mp3", leave: [""]},
-	"345664646549733388" : {join: "./dudeTracks/Plumbob.mp3", leave: ["./dudeTracks/PlumbobLeave.mp3"]},
-	"279675717451644929" : {join: "./dudeTracks/Kratos.mp3", leave: [""]}
-}
+//Redundant 
+/*const dudeSounds = {
+	"Zirpho#5819" : {intro: ["./dudeTracks/ZirphoIntro.mp3"], outro: ["./dudeTracks/ZirphoOutro.mp3"]},
+	"206057143198154753" : {intro: ["./dudeTracks/DeecoIntro.mp3"], outro: ["./dudeTracks/DeecoOutro.mp3"]},
+	"345662204756099073" : {intro: ["./dudeTracks/AsherIntro.mp3"], outro: ["./dudeTracks/AsherOutro.mp3"]},
+	"205771975807860737" : {intro: ["./dudeTracks/MafuIntro.mp3"], outro: ["./dudeTracks/MafuOutro.mp3", "./dudeTracks/MafuOutro1.mp3"]},
+	"270240517378277386" : {intro: ["./dudeTracks/TableIntro.mp3"], outro: [""]},
+	"162299432531001344" : {intro: ["./dudeTracks/ShenfieldIntro.mp3"], outro: [""]},
+	"345664646549733388" : {intro: ["./dudeTracks/PlumbobIntro.mp3"], outro: ["./dudeTracks/PlumbobOutro.mp3"]},
+	"279675717451644929" : {intro: ["./dudeTracks/KratosIntro.mp3"], outro: [""]}
+}*/
 
-function paramNo(param) {
-	i = 0;
-	while (fs.existsSync(`./${param}Tracks/${param}${i}.mp3`)) {i++};
-	return i
-};
-
-function randomNo(audio) {return Math.floor(Math.random()*paramNo(audio))};
-
-function playSound(path, voiceChannel) {
-	voiceChannel.join()
+//plays the audio from the path in the channel
+function playThisSound(audioPath, voiceChan) {
+	voiceChan.join()
 	.then(connection => {
-		let dispatcher = connection.play(path);
-		dispatcher.on('end', end => {
-			console.log("Is this working?")
-			voiceChannel.leave()
-		});
+		console.log(`Now playing... ${audioPath} in ${voiceChan.name}`)
+		const dispatcher = connection.play(audioPath);
 	}, reason => {
 		console.log(reason)
 	})
-}
+};
 
-function delCommands(time,textChannel) {
+//Plays random track from the requested type in the voiceChannel
+function playRequest(audioType, voiceChan) {
+	let i = 0;
+	while (fs.existsSync(`./${audioType}Tracks/${audioType}${i}.mp3`)) {i++};
+	if (i === 0) {
+		message.reply('\n That is not one of my many powerful commands tiny person');
+		return false
+	}
+	const rndInt = Math.floor(Math.random()*i);
+	const audioPath = `./${audioType}Tracks/${audioType}${rndInt}.mp3`;
+	playThisSound(audioPath, voiceChan);
+};
+
+function delCommands(time, textChannel) {
 	textChannel
-		.messages
-		.fetch({limit:35})
-		.then(messages => {
-			messages
-				.filter(message => message.content.startsWith('!'))
-				.each(message => message.delete({timeout : time}))
-			;
-		});
-	;
+	.messages
+	.fetch({limit:35})
+	.then(messages => {
+		messages
+		.filter(message => message.content.startsWith(pre))
+		.each(message => message.delete({timeout : time}))
+	});
+};
+
+//Returns the voice channel determined by the sent message
+function whichVoiceChan(msg, msgContent) {
+	if(!msgContent[1]) {return msg.member.voice.channel}
+	else if(msg.mentions) {
+		if(msg.mentions.members.first().voice.channel) {
+			const recipient = msg.mentions.members.first();
+			console.log(recipient.user.tag);
+			return recipient.voice.channel;
+		}
+		else {
+			console.log(msg.mentions.members.first().user.tag);
+			msg.reply('You have to @ a user in a voice channel in this server, duh.');
+			return false
+		}
+	}
+	else {
+		msg.reply(`There can only be 1 additional parameter and it must be a mention, idiot.`);
+		return false
+	}
+};
+
+//Plays intro and outro music
+function playTheme(state, themeType) {
+	const dude = state.member.user.tag;
+	let i = 0;
+	while (fs.existsSync(`./dudeTracks/${dude}${themeType}${i}.mp3`)) {i++};
+	if (i === 0) {
+		console.log(`No ${themeType} music for ${dude}`);
+		return false
+	};
+	const randThemeNo = Math.floor(Math.random()*i)
+	const themePath = `./dudeTracks/${dude}${themeType}${randThemeNo}.mp3`;
+	const voiceChan = state.channel;
+	console.log(`Playing ${dude}'s intro music ${themePath}`);
+	playThisSound(themePath, voiceChan);
 };
 
 client.once('ready', () => {console.log('Ready!')});
 
-
+//Plays intro music when someone joins a voicechannel, and outro music when they leave.
 client.on('voiceStateUpdate', (oldState, newState) => {
-	if (newState.member.user.username === client.user.username) {
-		return
-	};
-	console.log(`Voice state of ${newState.member.user.username} changed`);
-	let dude;
-	let soundPath;
-	let voiceChannel;
+	if (newState.member.user.bot) {return};
+	console.log(`Voice state of ${newState.member.user.tag} changed`);
+
 	if (oldState.channel == undefined && newState.channel !== undefined) {
-		dude = newState.id;
-		if(!dudeSounds[dude]) {return};
-		console.log(`Playing ${newState.member.user.username}'s intro music ${dudeSounds[dude].join}`);
-		soundPath = dudeSounds[dude].join;
-		voiceChannel = newState.channel;
-		playSound(soundPath, voiceChannel);
+		playTheme(newState, "Intro")
 	}
 	else if (newState.channel == undefined && oldState.channel !== undefined) {
-		dude = oldState.id;
-		if(!dudeSounds[dude]) {return}
-		console.log(`Playing ${oldState.member.user.username}'s outro music ${dudeSounds[dude].leave}`);
-		let leaveSounds = dudeSounds[dude].leave;
-		soundPath = leaveSounds[Math.floor(Math.random()*leaveSounds.length)];
-		voiceChannel = oldState.channel;
-		playSound(soundPath, voiceChannel);
+		playTheme(oldState, "Outro")
 	}
 	else {return};
 });
 
 client.on('message', message => {	
-	//If message doesn't begin with '!' or the author of the message is the bot then ignore.
-	if (!message.content.startsWith("!") | message.author.bot) {return};
+	//If message doesn't begin with the prefix or if the author of the message is the bot then ignore.
+	if (!message.content.startsWith(pre) | message.author.bot) {return};
 	
-	//Splits message content into an array of arguments
+	//Splits message content into an array of arguments and defines command as the primary argument
 	const args = message.content.substring(pre.length).split(' ');
+	const command = args[0];
 	
-	//Declaring variables that differ based on message content
-	let voiceChannel;
-	let random;
-	let textChannel = message.channel;
+	//Declaring channels
+	const textChannel = message.channel;
+	const voiceChan = whichVoiceChan(message, args);
+	if (!voiceChan) {return};
 	
-	
-	//Uses the @'d user's voicechannel. else the message author's
-	if (args[1]) {	
-		if(message.mentions.members.first().voice.channel) {
-			let member = message.mentions.members.first();
-			console.log(member);
-			voiceChannel = member.voice.channel;
-		}
-		else if (message.mentions.members) {
-			console.log(message.mentions.members.first());
-			message.reply('You have to @ a user in this server duh. They also have to be in a voice channel.');
-			return
-		}
-		else {
-			message.reply('Try again dufus')
-			return
-		}
-	}
-	else {
-		voiceChannel = message.member.voice.channel;
-	}
-	
-	if (!voiceChannel) {
-		message.reply('You have to be in a voice chanel for that, dumb dumb')
-	};
-	
-	switch(args[0]){
-		case 'dbd':
-			random = randomNo("dbd")
-			console.log("Playing dbd" + random)
-			playSound(`./DbDTracks/dbd${random}.mp3`,voiceChannel)
-			break
-		case 'bazinga':
-			random = randomNo("bazinga")
-			console.log("Playing bazinga" + random);
-			playSound(`./bazingaTracks/bazinga${random}.mp3`,voiceChannel);
-			break;
-		case 'sad':
-			random = randomNo("sad")
-			console.log("Playing sad" + random);
-			playSound(`./sadTracks/sad${random}.mp3`,voiceChannel);
-			break
-		case 'meme' :
-			random = randomNo("meme")
-			console.log("Playing meme" + random);
-			playSound(`./memeTracks/meme${random}.mp3`,voiceChannel);
-			break
+	//Switch between applicable commands
+	switch(command) {
 		case 'obliterate':
-			playSound(`./sounds/exodia.mp3`,voiceChannel);
+			playThisSound(`./sounds/exodia.mp3`, voiceChan);
 			delCommands(11000,textChannel);
 			break
 		case 'comedy':
-			playSound(`./sounds/seinfeld.mp3`,voiceChannel);
+			playThisSound(`./sounds/seinfeld.mp3`, voiceChan);
 			break
 		case 'shush':
-			if (voiceChannel) {
-				voiceChannel.leave();
-			}
-			else {
-				message.reply('No, you shush you bum');
-			}
+			if (voiceChan) {voiceChan.leave();}
+			else {message.reply('No, you shush you bum');}
 			break
-		case 'fail':
-			throw 'Intentional Error'
 		case 'help':
 			textChannel.send(helpText);
 			break
 		default :
-			message.reply('\n That is not one of my many powerful commands tiny person');
+			playRequest(command, voiceChan);
 			break
 	}
 });
