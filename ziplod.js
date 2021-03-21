@@ -2,16 +2,8 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const config = require('./config.json');
 //const ytdl = require('ytdl-core');
-const { OpusEncoder } = require('@discordjs/opus');
 const fs = require('fs');
 console.log("Launching Ziplod...")
-
-// Create the encoder.
-// Specify 48kHz sampling rate and 2 channel size.
-const encoder = new OpusEncoder(48000, 2);
-// Encode and decode.
-//const encoded = encoder.encode( 48000 / 100);
-//const decoded = encoder.decode( 48000 / 100);
 
 const pre = config.prefix;
 const helpText = (`Here is a list of current commands:
