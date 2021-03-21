@@ -65,7 +65,7 @@ function delCommands(time, textChannel) {
 //Returns the voice channel determined by the sent message
 function whichVoiceChan(msg, msgContent) {
 	if(!msgContent[1]) {return msg.member.voice.channel}
-	else if(msg.mentions) {
+	else if(msg.mentions.members.first()) {
 		if(msg.mentions.members.first().voice.channel) {
 			const recipient = msg.mentions.members.first();
 			console.log(recipient.user.tag);
