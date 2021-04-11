@@ -39,7 +39,7 @@ function playThisSound(audioPath, voiceChan) {
 };
 
 //Plays random track from the requested type in the voiceChannel
-function playRequest(audioType, voiceChan) {
+function playRequest(audioType, voiceChan, message) {
 	let i = 0;
 	while (fs.existsSync(`./${audioType}Tracks/${audioType}${i}.mp3`)) {i++};
 	if (i === 0) {
@@ -145,7 +145,7 @@ client.on('message', message => {
 			textChannel.send(helpText);
 			break
 		default :
-			playRequest(command, voiceChan);
+			playRequest(command, voiceChan, message);
 			break
 	}
 });
