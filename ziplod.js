@@ -6,79 +6,65 @@ const fs = require('fs');
 console.log("Launching Ziplod...")
 
 const pre = config.prefix;
-const helpText = (`Here is a list of current commands:
-!bazinga - plays a laugh
-!sad - plays a sad
-!shush - Tell the bot off
-!help - sends for the help
-!comedy - prepare yourself
-!meme - random meme attack, optionally @ your friends`
-)
+const helpText = (
+	`Here is a list of current commands:
+	!bazinga - plays a laugh
+	!sad - plays a sad
+	!shush - Tell the bot off
+	!help - sends for the help
+	!comedy - prepare yourself
+	!meme - random meme attack, optionally @ your friends`
+);
 
-//Redundant 
-/*const dudeSounds = {
-	"Zirpho#5819" : {intro: ["./dudeTracks/ZirphoIntro.mp3"], outro: ["./dudeTracks/ZirphoOutro.mp3"]},
-	"206057143198154753" : {intro: ["./dudeTracks/DeecoIntro.mp3"], outro: ["./dudeTracks/DeecoOutro.mp3"]},
-	"345662204756099073" : {intro: ["./dudeTracks/AsherIntro.mp3"], outro: ["./dudeTracks/AsherOutro.mp3"]},
-	"205771975807860737" : {intro: ["./dudeTracks/MafuIntro.mp3"], outro: ["./dudeTracks/MafuOutro.mp3", "./dudeTracks/MafuOutro1.mp3"]},
-	"270240517378277386" : {intro: ["./dudeTracks/TableIntro.mp3"], outro: [""]},
-	"162299432531001344" : {intro: ["./dudeTracks/ShenfieldIntro.mp3"], outro: [""]},
-	"345664646549733388" : {intro: ["./dudeTracks/PlumbobIntro.mp3"], outro: ["./dudeTracks/PlumbobOutro.mp3"]},
-	"279675717451644929" : {intro: ["./dudeTracks/KratosIntro.mp3"], outro: [""]}
-}*/
 
 //plays the audio from the path in the channel
-function playThisSound(audioPath, voiceChan) {
-	voiceChan.join()
-	.then(connection => {
+function playThisSound(audioPath) {
+	voiceChan.join().then(connection => {
 		console.log(`Now playing... ${audioPath} in ${voiceChan.name}`)
-		const dispatcher = connection.play(audioPath);
+		connection.play(audioPath).catch(err => console.log(err));
 	}, reason => {
 		console.log(reason)
 	})
 };
 
 //Plays random track from the requested type in the voiceChannel
-function playRequest(audioType, voiceChan, message) {
+function playMeme(command, message) {
 	let i = 0;
-	while (fs.existsSync(`./${audioType}Tracks/${audioType}${i}.mp3`)) {i++};
+	while (fs.existsSync(`./${command}Tracks/${command}${i}.mp3`)) {i++};
 	if (i === 0) {
 		message.reply('\n That is not one of my many powerful commands tiny person');
 		return false
 	}
 	const rndInt = Math.floor(Math.random()*i);
-	const audioPath = `./${audioType}Tracks/${audioType}${rndInt}.mp3`;
-	playThisSound(audioPath, voiceChan);
+	const audioPath = `./${command}Tracks/${command}${rndInt}.mp3`;
+	playThisSound(audioPath);
 };
 
-function delCommands(time, textChannel) {
-	textChannel
-	.messages
-	.fetch({limit:35})
-	.then(messages => {
-		messages
-		.filter(message => message.content.startsWith(pre))
-		.each(message => message.delete({timeout : time}))
-	});
+function delCommands(time) {
+	textChannel.messages
+		.fetch({limit:35})
+		.then(messages => {
+			messages
+				.filter(message => message.content.startsWith(pre))
+				.each(message => message.delete({timeout : time}))
+		});
 };
 
 //Returns the voice channel determined by the sent message
-function whichVoiceChan(msg, msgContent) {
-	if(!msgContent[1]) {return msg.member.voice.channel}
-	else if(msg.mentions.members.first()) {
-		if(msg.mentions.members.first().voice.channel) {
-			const recipient = msg.mentions.members.first();
-			console.log(recipient.user.tag);
-			return recipient.voice.channel;
-		}
-		else {
-			console.log(msg.mentions.members.first().user.tag);
-			msg.reply('You have to @ a user in a voice channel in this server, duh.');
-			return false
-		}
+function whichVoiceChan(msg) {
+	const recipient = msg.mentions.members.first();
+	const author = msg.member;
+
+	if(!recipient) {
+		console.log('@' + author);
+		return author.voice.channel
 	}
-	else {
-		msg.reply(`There can only be 1 additional parameter and it must be a mention, idiot.`);
+	else if(recipient.voice.channel) {
+		console.log('@' + recipient.user.tag);
+		return recipient.voice.channel;
+	}
+	else if (recipient) {
+		msg.reply('You have to @ a user in a voice channel in this server, duh.');
 		return false
 	}
 };
@@ -96,7 +82,7 @@ function playTheme(state, themeType) {
 	const themePath = `./dudeTracks/${dude}${themeType}${randThemeNo}.mp3`;
 	const voiceChan = state.channel;
 	console.log(`Playing ${dude}'s intro music ${themePath}`);
-	playThisSound(themePath, voiceChan);
+	playThisSound(themePath);
 };
 
 client.once('ready', () => {console.log('Ready!')});
@@ -105,14 +91,12 @@ client.once('ready', () => {console.log('Ready!')});
 client.on('voiceStateUpdate', (oldState, newState) => {
 	if (newState.member.user.bot) {return};
 	console.log(`Voice state of ${newState.member.user.tag} changed`);
-
 	if (oldState.channel == undefined && newState.channel !== undefined) {
 		playTheme(newState, "Intro")
 	}
 	else if (newState.channel == undefined && oldState.channel !== undefined) {
 		playTheme(oldState, "Outro")
 	}
-	else {return};
 });
 
 client.on('message', message => {	
@@ -131,21 +115,21 @@ client.on('message', message => {
 	//Switch between applicable commands
 	switch(command) {
 		case 'obliterate':
-			playThisSound(`./sounds/exodia.mp3`, voiceChan);
+			playThisSound(`./sounds/exodia.mp3`);
 			delCommands(11000,textChannel);
 			break
 		case 'comedy':
-			playThisSound(`./sounds/seinfeld.mp3`, voiceChan);
+			playThisSound(`./sounds/seinfeld.mp3`);
 			break
 		case 'shush':
-			if (voiceChan) {voiceChan.leave();}
+			if (client.voice.channel) {client.voice.channel.leave();}
 			else {message.reply('No, you shush you bum');}
 			break
 		case 'help':
 			textChannel.send(helpText);
 			break
 		default :
-			playRequest(command, voiceChan, message);
+			playMeme(command, message);
 			break
 	}
 });
