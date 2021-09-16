@@ -1,11 +1,11 @@
-const Discord = require('discord.js');
-const client = new Discord.Client();
-const config = require('./config.json');
+const { Client, Intents } = require('discord.js');
+const { prefix, token } = require('./config.json');
+const client = new Client( { intents: [Intents.FLAGS.GUILDS] } );
 //const ytdl = require('ytdl-core');
-const fs = require('fs');
+const { existsSync } = require('fs');
 console.log("Launching Ziplod...")
 
-const pre = config.prefix;
+const pre = prefix;
 const helpText = (
 	`Here is a list of current commands:
 	!bazinga - plays a laugh
@@ -30,7 +30,7 @@ function playThisSound(audioPath) {
 //Plays random track from the requested type in the voiceChannel
 function playMeme(command, message) {
 	let i = 0;
-	while (fs.existsSync(`./${command}Tracks/${command}${i}.mp3`)) {i++};
+	while (existsSync(`./${command}Tracks/${command}${i}.mp3`)) {i++};
 	if (i === 0) {
 		message.reply('\n That is not one of my many powerful commands tiny person');
 		return false
@@ -73,7 +73,7 @@ function whichVoiceChan(msg) {
 function playTheme(state, themeType) {
 	const dude = state.member.user.tag;
 	let i = 0;
-	while (fs.existsSync(`./dudeTracks/${dude}${themeType}${i}.mp3`)) {i++};
+	while (existsSync(`./dudeTracks/${dude}${themeType}${i}.mp3`)) {i++};
 	if (i === 0) {
 		console.log(`No ${themeType} music for ${dude}`);
 		return false
@@ -134,4 +134,4 @@ client.on('message', message => {
 	}
 });
 
-client.login(config.token);
+client.login(token);
