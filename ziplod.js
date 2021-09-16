@@ -1,6 +1,17 @@
 const { Client, Intents } = require('discord.js');
 const { prefix, token } = require('./config.json');
-const client = new Client( { intents: [Intents.FLAGS.GUILDS] } );
+const v = require('@discordjs/voice');
+const intents = {
+	intents: [
+		Intents.FLAGS.GUILDS,
+		Intents.FLAGS.GUILD_VOICE_STATES,
+		Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+		Intents.FLAGS.GUILD_PRESENCES,
+		Intents.FLAGS.GUILD_MEMBERS,
+		Intents.FLAGS.GUILD_MESSAGES
+	]
+}
+const client = new Client( intents );
 //const ytdl = require('ytdl-core');
 const { existsSync } = require('fs');
 console.log("Launching Ziplod...")
@@ -17,14 +28,22 @@ const helpText = (
 );
 
 
+//////////////////////////
+//      FUNCTIONS      //
+/////////////////////////
+
 //plays the audio from the path in the channel
-function playThisSound(audioPath) {
-	voiceChan.join().then(connection => {
-		console.log(`Now playing... ${audioPath} in ${voiceChan.name}`)
-		connection.play(audioPath).catch(err => console.log(err));
-	}, reason => {
-		console.log(reason)
+function playThisSound(audioPath, channel) {
+	const connection = v.joinVoiceChannel({
+		channelId: channel.id,
+		guildId: channel.guild.id,
+		adapterCreator: channel.guild.voiceAdapterCreator,
 	})
+	const player = v.createAudioPlayer();
+	const resource = v.createAudioResource(audioPath);
+	player.play(resource);
+	connection.subscribe(player);
+	console.log(`Now playing... ${audioPath} in ${channel.name}`)
 };
 
 //Plays random track from the requested type in the voiceChannel
@@ -37,7 +56,8 @@ function playMeme(command, message) {
 	}
 	const rndInt = Math.floor(Math.random()*i);
 	const audioPath = `./${command}Tracks/${command}${rndInt}.mp3`;
-	playThisSound(audioPath);
+	const voiceChan = whichVoiceChan(message);
+	playThisSound(audioPath, voiceChan);
 };
 
 function delCommands(time) {
@@ -56,11 +76,11 @@ function whichVoiceChan(msg) {
 	const author = msg.member;
 
 	if(!recipient) {
-		console.log('@' + author);
+		console.log(author.user.tag);
 		return author.voice.channel
 	}
 	else if(recipient.voice.channel) {
-		console.log('@' + recipient.user.tag);
+		console.log(recipient.user.tag);
 		return recipient.voice.channel;
 	}
 	else if (recipient) {
@@ -73,33 +93,37 @@ function whichVoiceChan(msg) {
 function playTheme(state, themeType) {
 	const dude = state.member.user.tag;
 	let i = 0;
-	while (existsSync(`./dudeTracks/${dude}${themeType}${i}.mp3`)) {i++};
+	while (existsSync(`./dudeTracks/${dude}/${themeType}-${i}.mp3`)) {i++};
 	if (i === 0) {
 		console.log(`No ${themeType} music for ${dude}`);
 		return false
 	};
 	const randThemeNo = Math.floor(Math.random()*i)
-	const themePath = `./dudeTracks/${dude}${themeType}${randThemeNo}.mp3`;
+	const themePath = `./dudeTracks/${dude}/${themeType}-${randThemeNo}.mp3`;
 	const voiceChan = state.channel;
 	console.log(`Playing ${dude}'s intro music ${themePath}`);
-	playThisSound(themePath);
+	playThisSound(themePath, voiceChan);
 };
 
-client.once('ready', () => {console.log('Ready!')});
+
+//////////////////////////
+//    EVENT HANLDERS   //
+/////////////////////////
+client.once('ready', () => {console.log('Ready! Steady! ...')});
 
 //Plays intro music when someone joins a voicechannel, and outro music when they leave.
 client.on('voiceStateUpdate', (oldState, newState) => {
 	if (newState.member.user.bot) {return};
 	console.log(`Voice state of ${newState.member.user.tag} changed`);
 	if (oldState.channel == undefined && newState.channel !== undefined) {
-		playTheme(newState, "Intro")
+		playTheme(newState, "int")
 	}
 	else if (newState.channel == undefined && oldState.channel !== undefined) {
-		playTheme(oldState, "Outro")
+		playTheme(oldState, "out")
 	}
 });
 
-client.on('message', message => {	
+client.on('messageCreate', message => {	
 	//If message doesn't begin with the prefix or if the author of the message is the bot then ignore.
 	if (!message.content.startsWith(pre) | message.author.bot) {return};
 	
@@ -109,17 +133,17 @@ client.on('message', message => {
 	
 	//Declaring channels
 	const textChannel = message.channel;
-	const voiceChan = whichVoiceChan(message, args);
+	const voiceChan = whichVoiceChan(message);
 	if (!voiceChan) {return};
 	
 	//Switch between applicable commands
 	switch(command) {
 		case 'obliterate':
-			playThisSound(`./sounds/exodia.mp3`);
+			playThisSound(`./sounds/exodia.mp3`, voiceChan);
 			delCommands(11000,textChannel);
 			break
 		case 'comedy':
-			playThisSound(`./sounds/seinfeld.mp3`);
+			playThisSound(`./sounds/seinfeld.mp3`, voiceChan);
 			break
 		case 'shush':
 			if (client.voice.channel) {client.voice.channel.leave();}
