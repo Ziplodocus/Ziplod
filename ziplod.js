@@ -76,11 +76,9 @@ function whichVoiceChan(msg) {
 	const author = msg.member;
 
 	if(!recipient) {
-		console.log(author.user.tag);
 		return author.voice.channel
 	}
 	else if(recipient.voice.channel) {
-		console.log(recipient.user.tag);
 		return recipient.voice.channel;
 	}
 	else if (recipient) {
@@ -105,11 +103,35 @@ function playTheme(state, themeType) {
 	playThisSound(themePath, voiceChan);
 };
 
+// Function to remove custom gamer role from everyone in a guild
+function endGamers(message) {
+	let replyData = [];
+	let roles = message.guild.roles;
+	let therole = roles.cache.find(role => role.name === "Custom Gamer");
+	if (!therole) {
+		roles.fetch(null, {cache:true})
+		.then( roles => {
+			therole = roles.find(role => role.name === "Custom Gamer");
+			const gamers = roles.cache.get(therole.id).members;
+			gamers.forEach( gamer => {
+				replyData.push(gamer.user.tag);
+				gamer.roles.remove(therole.id);
+			})
+		})
+	} else {
+		const gamers = roles.cache.get(therole.id).members;
+		gamers.forEach( gamer => {
+			replyData.push(gamer.user.tag);
+			gamer.roles.remove(therole.id);
+		})
+		message.reply(replyData.join(', ')+' have had the role "Custom Gamer" successfully removed. Really, really.');
+	}
+}
 
 //////////////////////////
 //    EVENT HANLDERS   //
 /////////////////////////
-client.once('ready', () => {console.log('Ready! Steady! ...')});
+client.once('ready', () => {console.log('Ready! Steady! ...Go!')});
 
 //Plays intro music when someone joins a voicechannel, and outro music when they leave.
 client.on('voiceStateUpdate', (oldState, newState) => {
@@ -134,8 +156,8 @@ client.on('messageCreate', message => {
 	//Declaring channels
 	const textChannel = message.channel;
 	const voiceChan = whichVoiceChan(message);
-	if (!voiceChan) {return};
-	
+	// if (!voiceChan) {return};
+	console.log(command);
 	//Switch between applicable commands
 	switch(command) {
 		case 'obliterate':
@@ -151,6 +173,9 @@ client.on('messageCreate', message => {
 			break
 		case 'help':
 			textChannel.send(helpText);
+			break
+		case 'endGamers':
+			endGamers(message);
 			break
 		default :
 			playMeme(command, message);
