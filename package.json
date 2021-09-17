@@ -1,19 +1,30 @@
 {
   "name": "ziplod",
-  "version": "1.0.1",
-  "description": "Haha funny go bot bot",
-  "main": "ziplod",
+  "version": "0.0.5",
+  "description": "Ziplod is an all powerful discord bot that plays some sounds and has very specific funtionality",
+  "main": "ziplod.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Ziplodocus",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ziplodocus/Ziplod.git"
+  },
+  "keywords": [
+    "Ziplod"
+  ],
+  "author": "Ziplodocus / Harry Holehouse-Eyre",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ziplodocus/Ziplod/issues"
+  },
+  "homepage": "https://github.com/Ziplodocus/Ziplod#readme",
   "dependencies": {
-    "@discordjs/opus": "^0.3.3",
-    "discord.js": "^12.4.1",
-    "ffmpeg": "^0.0.4",
-    "ffmpeg-static": "^4.2.7",
-    "sodium": "^3.0.2",
-    "ytdl-core": "^4.0.3"
+    "@discordjs/rest": "^0.1.0-canary.0",
+    "@discordjs/voice": "^0.6.0",
+    "discord-api-types": "^0.23.1",
+    "discord.js": "^13.1.0",
+    "ffmpeg-static": "^4.4.0",
+    "libsodium-wrappers": "^0.7.9"
   }
 }
