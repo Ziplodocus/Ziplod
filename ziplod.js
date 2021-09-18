@@ -47,26 +47,25 @@ function playThisSound(audioPath, channel) {
 };
 
 //Plays random track from the requested type in the voiceChannel
-function playMeme(command, message) {
+function playMeme() {
 	let i = 0;
-	while (existsSync(`./${command}Tracks/${command}${i}.mp3`)) {i++};
+	while (existsSync(`./${handlers.command}Tracks/${handlers.command}${i}.mp3`)) {i++};
 	if (i === 0) {
-		message.reply('\n That is not one of my many powerful commands tiny person');
+		handlers.message.reply('\n That is not one of my many powerful commands tiny person');
 		return false
 	}
 	const rndInt = Math.floor(Math.random()*i);
-	const audioPath = `./${command}Tracks/${command}${rndInt}.mp3`;
-	const voiceChan = whichVoiceChan(message);
-	playThisSound(audioPath, voiceChan);
+	const audioPath = `./${handlers.command}Tracks/${handlers.command}${rndInt}.mp3`;
+	playThisSound(audioPath, handlers.voiceChannel);
 };
 
-function delCommands(time) {
-	textChannel.messages
-		.fetch({limit:35})
+function delCommands(time=11000) {
+	handlers.textChannel.messages
+		.fetch({limit:50})
 		.then(messages => {
 			messages
-				.filter(message => message.content.startsWith(pre))
-				.each(message => message.delete({timeout : time}))
+				.filter( message => message.content.startsWith(pre) || message.author.client == client )
+				.each( message => message.delete({timeout : time}) )
 		});
 };
 
@@ -74,16 +73,11 @@ function delCommands(time) {
 function whichVoiceChan(msg) {
 	const recipient = msg.mentions.members.first();
 	const author = msg.member;
-
-	if(!recipient) {
-		return author.voice.channel
-	}
-	else if(recipient.voice.channel) {
-		return recipient.voice.channel;
-	}
+	if(!recipient) return author.voice.channel;
+	else if(recipient.voice.channel) return recipient.voice.channel;
 	else if (recipient) {
 		msg.reply('You have to @ a user in a voice channel in this server, duh.');
-		return false
+		return false;
 	}
 };
 
@@ -103,34 +97,51 @@ function playTheme(state, themeType) {
 	playThisSound(themePath, voiceChan);
 };
 
-// Function to remove custom gamer role from everyone in a guild
-function endGamers(message) {
-	let replyData = [];
-	let roles = message.guild.roles;
-	let therole = roles.cache.find(role => role.name === "Custom Gamer");
-	if (!therole) {
-		roles.fetch(null, {cache:true})
-		.then( roles => {
-			therole = roles.find(role => role.name === "Custom Gamer");
-			const gamers = roles.cache.get(therole.id).members;
-			gamers.forEach( gamer => {
-				replyData.push(gamer.user.tag);
-				gamer.roles.remove(therole.id);
-			})
-		})
-	} else {
-		const gamers = roles.cache.get(therole.id).members;
-		gamers.forEach( gamer => {
-			replyData.push(gamer.user.tag);
-			gamer.roles.remove(therole.id);
-		})
-		message.reply(replyData.join(', ')+' have had the role "Custom Gamer" successfully removed. Really, really.');
-	}
-}
-
 //////////////////////////
 //    EVENT HANLDERS   //
 /////////////////////////
+const handlers = {
+	_message: false,
+	get command() { return this.message.content.substring(pre.length).split(' ')[0] },
+	get args() { return this.message.content.substring(pre.length + this.command.length).split(' ') },
+	get message() { return this._message },
+	get voiceChannel() { return whichVoiceChan(this.message) },
+	get textChannel() { return this.message ? this.message.channel : false },
+	set message(newMessage) { this._message = newMessage },
+
+	comedy: function() {
+		playThisSound(`./sounds/seinfeld.mp3`, this.voiceChannel);
+	},
+	obliterate: function() {
+		delCommands()
+		playThisSound(`./sounds/exodia.mp3`, this.voiceChannel)
+	},
+	shush: function() {
+		if (client.voice.channel) client.voice.channel.leave();
+		else this.message.reply('No, you shush you bum');
+	},
+	help: function() {
+		this.textChannel.send(helpText);
+	},
+	endGamers: async function() {
+		let argRole = this.args[0] || 'Custom Gamer';
+		let replyData = [];
+		const roles = this.message.guild.roles || await roles.fetch(null, {cache:true});
+		console.log(roles.cache);
+		const therole = roles.cache.find( role => role.name === argRole ) ;
+		if (therole) {
+			const gamers = therole.members;
+			gamers.forEach( gamer => {
+				replyData.push(gamer.user.tag);
+			})
+			this.message.reply(replyData.join(',\n')+'\n have had the role "Custom Gamer" successfully removed. Really, really. For real this time.');
+		} else this.message.reply("The role "+role+" could not be found :(");
+	}
+}
+
+/////////////////
+//   EVENTS   //
+/////////////////
 client.once('ready', () => {console.log('Ready! Steady! ...Go!')});
 
 //Plays intro music when someone joins a voicechannel, and outro music when they leave.
@@ -147,40 +158,9 @@ client.on('voiceStateUpdate', (oldState, newState) => {
 
 client.on('messageCreate', message => {	
 	//If message doesn't begin with the prefix or if the author of the message is the bot then ignore.
-	if (!message.content.startsWith(pre) | message.author.bot) {return};
-	
-	//Splits message content into an array of arguments and defines command as the primary argument
-	const args = message.content.substring(pre.length).split(' ');
-	const command = args[0];
-	
-	//Declaring channels
-	const textChannel = message.channel;
-	const voiceChan = whichVoiceChan(message);
-	// if (!voiceChan) {return};
-	console.log(command);
-	//Switch between applicable commands
-	switch(command) {
-		case 'obliterate':
-			playThisSound(`./sounds/exodia.mp3`, voiceChan);
-			delCommands(11000,textChannel);
-			break
-		case 'comedy':
-			playThisSound(`./sounds/seinfeld.mp3`, voiceChan);
-			break
-		case 'shush':
-			if (client.voice.channel) {client.voice.channel.leave();}
-			else {message.reply('No, you shush you bum');}
-			break
-		case 'help':
-			textChannel.send(helpText);
-			break
-		case 'endGamers':
-			endGamers(message);
-			break
-		default :
-			playMeme(command, message);
-			break
-	}
+	if (!message.content.startsWith(pre) || message.author.bot) {return};
+	handlers.message = message;
+	handlers[handlers.command] ? handlers[handlers.command]() : playMeme();
 });
 
 client.login(token);
