@@ -3,6 +3,7 @@
   "version": "0.0.5",
   "description": "Ziplod is an all powerful discord bot that plays some sounds and has very specific funtionality",
   "main": "ziplod.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
