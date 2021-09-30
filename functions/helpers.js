@@ -46,3 +46,24 @@ export function playTheme(state, themeType) {
     console.log(`Playing ${dude}'s ${themeType}ro music ${themePath}`);
     playSound(themePath, voiceChan);
 }
+
+export function randomTime() {
+    return 1000*30 + Math.random()*1000*60*10;
+}
+
+export async function intervalMeme() {
+    const channelIds = client.voice.adapters.keys();
+    for ( let channelId of channelIds ) {
+        const channel = await client.channels.fetch(channelId);
+        if( channel.isVoice() ) {
+            let i=0;
+            while( existsSync(`./assets/memeTracks/meme${i}.mp3`) ) {i++};
+            const rndInt = Math.floor(Math.random()*i);
+            const audioPath = `./assets/memeTracks/meme${rndInt}.mp3`;
+            playSound(audioPath, channel);
+        }
+    }
+    setTimeout(() => {
+        intervalMeme();
+    }, randomTime())
+}

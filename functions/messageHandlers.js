@@ -75,6 +75,7 @@ export function extendMessage(message) {
             const argRole = message.args.join(' ') || 'Custom Gamer';
             const roles = message.guild.roles || await roles.fetch(null, {cache:true});
             const therole = roles.cache.find( role => role.name === argRole );
+            console.log(therole);
             if(!therole) return message.reply("You have to pick a role that exists dummy.");
     
             const button1 = new MessageButton({
