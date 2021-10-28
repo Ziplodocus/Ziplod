@@ -2,7 +2,7 @@
 import { Client, Intents } from 'discord.js';
 import { token } from './config.js';
 import { events } from './events/events.js';
-import { intervalMeme } from './functions/helpers.js';
+import {  } from './functions/helpers.js';
 
 // Defining constants
 const intents = {
@@ -24,7 +24,5 @@ for (const eventType in events) {
 	const event = events[eventType];
 	client[event.how](eventType, event.execute);
 }
-
-intervalMeme();
 
 client.login(token);
