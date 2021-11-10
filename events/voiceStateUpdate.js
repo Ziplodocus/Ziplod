@@ -16,22 +16,23 @@ export const voiceStateUpdate = {
 };
 
 function intervalMeme( oldState, newState ) {
+    const newId = newState.guild.id;
+    const oldId = oldState.guild.id;
 
     if( newState.channel === undefined ) {
-        clearTimeout(intervalMeme[oldState.guild.id].memeTimeout)
-        intervalMeme[oldState.guild.id] = false;
+        clearTimeout( intervalMeme[oldId].memeTimeout );
+        intervalMeme[oldId] = false;
         return
     }
 
-    //if( intervalMeme[newState.guild.id] && ( newState.channel !== intervalMeme[newState.guild.id].currChannel ) ) 
-    console.log(intervalMeme);
-    intervalMeme[newState.guild.id] = {
+    intervalMeme[newId] = {
         currChannel: newState.channel,
         memeTimeout: setTimeout( () => {
-            playRandomMeme(intervalMeme[newState.guild.id].currChannel);
-            intervalMeme(oldState, newState);
+            playRandomMeme( intervalMeme[newId].currChannel );
+            intervalMeme( oldState, newState );
         }, randomTime() )
     }
-    if(intervalMeme[oldState.guild.id]) clearTimeout(intervalMeme[oldState.guild.id].memeTimeout);
 
+    console.dir( intervalMeme );
+    if( newId !== oldId ) clearTimeout( intervalMeme[oldId].memeTimeout );
 }
