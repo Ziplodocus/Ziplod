@@ -2,13 +2,12 @@ import { joinVoiceChannel, createAudioPlayer, createAudioResource } from '@disco
 import { prefix } from '../config.js';
 import { client } from '../ziplod.js';
 import { existsSync } from 'fs';
-// import { channel } from 'diagnostics_channel';
-
 
 //////////////////////////
 //      FUNCTIONS      //
 /////////////////////////
 
+// Deletes commands the last 50 commands in the given text channel
 export function delCommands(channel, time=11000) {
     channel.messages
     .fetch({limit:50})
@@ -19,6 +18,7 @@ export function delCommands(channel, time=11000) {
     });
 }
 
+// Plays in the given channel the audio file at the given file path
 export function playSound(audioPath, channel) {
     const connection = joinVoiceChannel({
         channelId: channel.id,
@@ -32,8 +32,8 @@ export function playSound(audioPath, channel) {
     console.log(`Now playing... ${audioPath} in ${channel.name}`)
 }
 
-//Plays intro and outro music
-export function playTheme(state, themeType) {
+//Determines and plays the theme music ( if any ) of a user
+export function playTheme( state, themeType ) {
     const dude = state.member.user.tag;
     let i = 0;
     while (existsSync(`./assets/dudeTracks/${dude}/${themeType}-${i}.mp3`)) {i++};
@@ -45,13 +45,15 @@ export function playTheme(state, themeType) {
     const themePath = `./assets/dudeTracks/${dude}/${themeType}-${randThemeNo}.mp3`;
     const voiceChan = state.channel;
     console.log(`Playing ${dude}'s ${themeType}ro music ${themePath}`);
-    playSound(themePath, voiceChan);
+    playSound( themePath, voiceChan );
 }
 
+// Returns a random time between 10 seconds and 10 minutes
 export function randomTime() {
     return 1000*10 + Math.random()*1000*60*10;
 }
 
+// Plays a random meme in the given voice channel
 export function playRandomMeme(channel) {
     if( channel.isVoice() ) {
         let i=0;

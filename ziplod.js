@@ -1,8 +1,7 @@
 // Importing modules
 import { Client, Intents } from 'discord.js';
 import { token } from './config.js';
-import { events } from './events/events.js';
-import {  } from './functions/helpers.js';
+import { setupEventListeners } from './events/events.js';
 
 // Defining constants
 const intents = {
@@ -15,14 +14,11 @@ const intents = {
 		Intents.FLAGS.GUILD_MESSAGES
 	]
 };
+
 export const client = new Client( intents );
 
 console.log("Launching Ziplod...");
 
-// Adding event listeners
-for (const eventType in events) {
-	const event = events[eventType];
-	client[event.how](eventType, event.execute);
-}
+setupEventListeners();
 
 client.login(token);
