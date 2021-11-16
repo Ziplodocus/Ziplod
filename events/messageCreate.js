@@ -1,7 +1,7 @@
 
 import { definedCommands } from './messageCreate/commands/definedCommands.js';
 import { dynamicCommands } from './messageCreate/commands/dynamicCommands.js'
-import { prefix } from '../config.js';
+import { prefix } from '../data/config.js';
 
 export const messageCreate = {
 	name: 'messageCreate',
@@ -12,7 +12,10 @@ export const messageCreate = {
 		//If message doesn't begin with the prefix or if the author of the message is the bot then ignore.
         if (!message.isCommand || message.author.bot) return;
         // Run a predetermined command if it exists, or run the dynamic handler
-        message.predetermineHandlers?.[message.command] || message.dynamicCommand();
+        message.definedCommands?.[message.command]?.()
+        || message.dynamicCommand()
+        || console.log('That is not one of my many powerful commands, tiny person.');
+        //|| message.reply('\n That is not one of my many powerful commands tiny person');
 	},
 };
 
@@ -26,5 +29,5 @@ function extendMessage(message) {
         return recipient?.voice?.channel || author?.voice?.channel;
     } )()
     message.dynamicCommand = dynamicCommands(message);
-    message.definedCommands = definedCommands;
+    message.definedCommands = definedCommands(message);
 }
