@@ -38,13 +38,13 @@ export function playSound(audioPath, channel) {
 export function playTheme(state, themeType) {
     const dude = state.member.user.tag;
     let i = 0;
-    while (existsSync(`./assets/soundTracks/dudeTracks/${dude}/${themeType}-${i}.mp3`)) { i++ };
+    while (existsSync(`./assets/soundTracks/themeSongs/${dude}/${themeType}-${i}.mp3`)) { i++ };
     if (i === 0) {
         console.log(`No ${themeType} music for ${dude}`);
         return false
     };
     const randThemeNo = Math.floor(Math.random() * i)
-    const themePath = `./assets/soundTracks/dudeTracks/${dude}/${themeType}-${randThemeNo}.mp3`;
+    const themePath = `./assets/soundTracks/themeSongs/${dude}/${themeType}-${randThemeNo}.mp3`;
     const voiceChan = state.channel;
     console.log(`Playing ${dude}'s ${themeType}ro music`);
     playSound(themePath, voiceChan);
