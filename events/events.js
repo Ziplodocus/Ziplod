@@ -1,16 +1,13 @@
-
-import { ready } from './ready.js';
-import { messageCreate } from './messageCreate.js';
-import { voiceStateUpdate } from './voiceStateUpdate.js';
 import { client } from '../ziplod.js';
-
-const events = [
-    ready,
-    messageCreate,
-    voiceStateUpdate
-]
-
-// Adding event listeners
-export async function setupEventListeners() { 
-    events.forEach( event => client[event.how]( event.name, event.execute ) ) 
+import { getDirs } from '../helperFunctions/helpers.js';
+export var EventWhen;
+(function (EventWhen) {
+    EventWhen["on"] = "on";
+    EventWhen["once"] = "once";
+})(EventWhen || (EventWhen = {}));
+export function establishEvents() {
+    getDirs('./events').forEach(async (dirname) => {
+        const event = await import(`./${dirname}/${dirname}.js`);
+        client[event.type](dirname, event[dirname]);
+    });
 }

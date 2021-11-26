@@ -1,4 +1,4 @@
-import { randomTime, playRandomMeme } from '../../helperFunctions/helpers.js';
+import { randomTime, playRandomMeme } from '../../../helperFunctions/helpers.js';
 
 export function handleBot( oldState, newState ) {
     //Guild id will be same for both states, voicestateupdate cannot be across guilds ( for ziplod )

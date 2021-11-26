@@ -5,7 +5,7 @@ const soundTracks = {};
 // This function updates the not "JSON" file with data from the file structure indicating which dynamic sound
 // commands exist and how many tracks there are for each
 async function updateTrackCache() {
-    const audioDir = pathTo('assets/soundTracks');
+    const audioDir = './assets/soundTracks';
     const soundTracksFolders = readdirSync(audioDir);
     const cacheable = soundTracksFolders.filter( folder => folder.endsWith('Tracks') );
     cacheable.forEach( trackTypeFull => {
@@ -15,7 +15,7 @@ async function updateTrackCache() {
         else if ( soundTracks[trackType].count !== trackCount ) soundTracks[trackType].count = trackCount;
     })
     const fileContent = 'export const soundTracks = ' + JSON.stringify(soundTracks, null, 2);
-    writeFileSync( pathTo( 'data/soundTracks.js' ), fileContent );
+    writeFileSync( pathTo( './data/soundTracks.js' ), fileContent );
 }   
 
 // Function to set up the cron job (once every 24hrs) and to run once on start in case of file additions

@@ -1,5 +1,5 @@
 
-import { playTheme } from '../../helperFunctions/helpers.js';
+import { playTheme } from '../../../helperFunctions/helpers.js';
 
 // Handles voice state updates for non-bot users
 export function handleUser( oldState, newState ) {
