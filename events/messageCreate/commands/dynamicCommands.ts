@@ -2,8 +2,9 @@
 import { playSound } from '../../../helperFunctions/helpers.js';
 import { soundTracks } from '../../../data/soundTracks.js';
 import { relPathTo } from '../../../helperFunctions/helpers.js';
+import { Message } from 'discord.js';
 
-export function dynamicCommands(message) {
+export function dynamicCommands(message : Message) {
     return () => {
         if ( !soundTracks[message.command] ) return false;
         if ( !message.voiceChannel ) return message.reply('\n Someone has to be in a voice channel don\'t they? idiot.');

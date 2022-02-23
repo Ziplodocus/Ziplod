@@ -16,7 +16,7 @@ async function updateTrackCache() {
     })
     const fileContent = 'export const soundTracks = ' + JSON.stringify(soundTracks, null, 2);
     writeFileSync( pathTo( './data/soundTracks.js' ), fileContent );
-}   
+}
 
 // Function to set up the cron job (once every 24hrs) and to run once on start in case of file additions
 export function cacheUpdater() {
