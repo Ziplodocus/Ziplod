@@ -3,7 +3,7 @@ import { definedCommands } from './commands/definedCommands.js';
 import { dynamicCommands } from './commands/dynamicCommands.js'
 import { prefix } from '../../data/config.js';
 import { EventWhen } from '../events.js';
-import { GuildMember, Message, StageChannel, VoiceChannel } from 'discord.js';
+import { Message, VoiceChannel } from 'discord.js';
 
 export const type = EventWhen.on;
 
@@ -19,13 +19,13 @@ export function messageCreate(message:Message) {
     || extMessage.message.reply('\n That is not one of my many powerful commands tiny person');
 }
 
-class extendedMessage {
-    command : String
-    args : String[]
+export class extendedMessage {
+    command : string
+    args : string[]
     isCommand : boolean
-    voiceChannel : VoiceChannel | StageChannel | null | undefined
+    voiceChannel : VoiceChannel | null | undefined
     dynamicCommand : Function
-    definedCommands : Function
+    definedCommands : { [index : string] : Function }
     message : Message
     constructor(message : Message) {
         this.message = message;
@@ -33,11 +33,12 @@ class extendedMessage {
         this.args = message.content.substring(prefix.length + this.command.length + 1).split(' ');
         this.isCommand = message.content.startsWith(prefix);
         this.voiceChannel = ( () => {
-            const recipient : GuildMember | undefined | null = message?.mentions?.members?.first();
-            const author = message.member;
-            return recipient?.voice?.channel || author?.voice?.channel;
+            const recipientVoiceChan = message?.mentions?.members?.first()?.voice?.channel;
+            const authorVoiceChan = message.member?.voice?.channel;
+            const theChannel = recipientVoiceChan || authorVoiceChan;
+            return theChannel?.type === 'GUILD_VOICE' ? theChannel : null;
         } )()
-        this.dynamicCommand = () => dynamicCommands(message);
-        this.definedCommands = definedCommands(message);
+        this.dynamicCommand = () => dynamicCommands(this);
+        this.definedCommands = definedCommands(this);
     }
 }
