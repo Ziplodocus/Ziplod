@@ -39,7 +39,7 @@ export class extendedMessage {
             const theChannel = recipientVoiceChan || authorVoiceChan;
             return theChannel?.type === 'GUILD_VOICE' ? theChannel : undefined;
         } )();
-        this.dynamicCommand = () => dynamicCommands( this );
+        this.dynamicCommand = dynamicCommands( this );
         this.definedCommand = definedCommands( this );
         this.checkPermissions = ( permissions: PermissionResolvable[] ) => {
             const guild = this.message.guild;

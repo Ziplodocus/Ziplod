@@ -10,7 +10,7 @@ export function definedCommands( msg: extendedMessage ) {
 				return msg.message.reply(
 					"\n Someone has to be in a voice channel don' they? idiot."
 				);
-			playSound( `./assetsgs/sounds/seinfeld.mp3`, msg.voiceChannel );
+			playSound( `./assets/sounds/seinfeld.mp3`, msg.voiceChannel );
 			return msg;
 		},
 		obliterate() {

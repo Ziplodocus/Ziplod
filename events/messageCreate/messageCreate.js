@@ -29,7 +29,7 @@ export class extendedMessage {
             const theChannel = recipientVoiceChan || authorVoiceChan;
             return (theChannel === null || theChannel === void 0 ? void 0 : theChannel.type) === 'GUILD_VOICE' ? theChannel : undefined;
         })();
-        this.dynamicCommand = () => dynamicCommands(this);
+        this.dynamicCommand = dynamicCommands(this);
         this.definedCommand = definedCommands(this);
         this.checkPermissions = (permissions) => {
             var _a, _b, _c, _d;

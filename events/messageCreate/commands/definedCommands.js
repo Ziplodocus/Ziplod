@@ -6,7 +6,7 @@ export function definedCommands(msg) {
         comedy() {
             if (!msg.voiceChannel)
                 return msg.message.reply("\n Someone has to be in a voice channel don' they? idiot.");
-            playSound(`./assetsgs/sounds/seinfeld.mp3`, msg.voiceChannel);
+            playSound(`./assets/sounds/seinfeld.mp3`, msg.voiceChannel);
             return msg;
         },
         obliterate() {
