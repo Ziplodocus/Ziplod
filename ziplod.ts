@@ -2,10 +2,10 @@
 import { Client, Intents } from "discord.js";
 import { token } from "./data/config.js";
 import { establishEvents } from "./events/events.js";
-import { cacheUpdater } from "./cron-jobs/populateSoundTracks.js";
+import { soundTracksUpdater } from "./cron-jobs/soundTracks.js";
 
 // Defining root directory of project
-export const rootDir = new URL('.', import.meta.url).pathname.replace('/', '');
+export const rootDir = new URL( '.', import.meta.url ).pathname.replace( '/', '' );
 // Defining constants
 const intents = {
 	intents: [
@@ -18,11 +18,11 @@ const intents = {
 	]
 };
 
-export const client = new Client(intents);
+export const client = new Client( intents );
 
-console.log("Launching Ziplod...");
+console.log( "Launching Ziplod..." );
 
 establishEvents();
-cacheUpdater();
+soundTracksUpdater();
 
-client.login(token);
+client.login( token );

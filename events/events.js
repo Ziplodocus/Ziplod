@@ -6,10 +6,13 @@ export var EventWhen;
     EventWhen["once"] = "once";
 })(EventWhen || (EventWhen = {}));
 export function establishEvents() {
-    getDirs('./events').forEach(async (dirname) => {
+    getDirs('./events').forEach(async (dirname /* Also keyof ClientEvents */) => {
         console.log(dirname);
         const event = await import(`./${dirname}/${dirname}.js`);
         console.log(event);
+        // @ts-ignore Can't figure out how to get typescript to recognise
+        //that dirname will be a keyof ClientEvents and also accept that as
+        // a valid value for .forEach
         client[event.type](dirname, event[dirname]);
     });
 }

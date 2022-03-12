@@ -1,19 +1,19 @@
 import { playSound } from '../../../helperFunctions/helpers.js';
-import { soundTracks } from '../../../data/soundTracks.js';
+import { soundTracks } from '../../../cron-jobs/soundTracks.js';
 import { relPathTo } from '../../../helperFunctions/helpers.js';
-export function dynamicCommands(message) {
+export function dynamicCommands(msg) {
     return () => {
-        if (!soundTracks[message.command])
+        if (!soundTracks[msg.command])
             return false;
-        if (!message.voiceChannel)
-            return message.reply('\n Someone has to be in a voice channel don\'t they? idiot.');
-        const numbers = message.args.filter((arg) => !isNaN(parseInt(arg)));
+        if (!msg.voiceChannel)
+            return msg.message.reply('\n Someone has to be in a voice channel, don\'t they? idiot.');
+        const numbers = msg.args.filter((arg) => !isNaN(parseInt(arg)));
         const commandNumber = Math.abs(parseInt(numbers[0]));
-        const trackNo = commandNumber < soundTracks[message.command].count ?
+        const trackNo = commandNumber < soundTracks[msg.command].count ?
             commandNumber :
-            Math.floor(Math.random() * soundTracks[message.command].count);
-        const audioPath = relPathTo(`assets/soundTracks/${message.command}Tracks/${message.command}${trackNo}.mp3`);
-        playSound(audioPath, message.voiceChannel);
+            Math.floor(Math.random() * soundTracks[msg.command].count);
+        const audioPath = relPathTo(`assets/soundTracks/${msg.command}Tracks/${msg.command}${trackNo}.mp3`);
+        playSound(audioPath, msg.voiceChannel);
         return true;
     };
 }

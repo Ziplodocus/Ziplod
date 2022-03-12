@@ -1,47 +1,54 @@
 import { randomTime, playRandomMeme } from '../../../helperFunctions/helpers.js';
-
-export function handleBot( oldState, newState ) {
-    //Guild id will be same for both states, voicestateupdate cannot be across guilds ( for ziplod )
-    const guildId = newState.guild.id;
+export function handleBot(oldState, newState) {
     const newChan = newState.channel;
     const oldChan = oldState.channel;
-    const isNewChannel = ( oldChan !== newChan );
-    if ( !intervalMeme[guildId] ) return intervalMeme[guildId] = new intervalMeme( newChan );
+    if (oldChan === newChan)
+        return;
+    const guildId = newState.guild.id;
     const interval = intervalMeme[guildId];
-
-    switch ( true ) {
-        case newChan === undefined:
+    const isJoiningNewChannel = !!newChan && (newChan !== oldChan);
+    const isLeavingChannel = !newChan && !!oldChan;
+    const isChangingChannel = (newChan && oldChan) && (oldChan === newChan);
+    const isNewChanVoice = (newChan === null || newChan === void 0 ? void 0 : newChan.type) === "GUILD_VOICE";
+    const isOldChanVoice = (oldChan === null || oldChan === void 0 ? void 0 : oldChan.type) === "GUILD_VOICE";
+    if (isJoiningNewChannel && newChan.type === "GUILD_VOICE")
+        new intervalMeme(newChan);
+    else if (isLeavingChannel && oldChan.type === "GUILD_VOICE")
+        interval.destroy();
+    else if (isChangingChannel) {
+        if (!isNewChanVoice && !isOldChanVoice)
+            return;
+        else if (isNewChanVoice && isOldChanVoice)
+            interval.changeChannel(newChan);
+        else if (isNewChanVoice && !isOldChanVoice)
+            new intervalMeme(newChan);
+        else if (!isNewChanVoice && isOldChanVoice)
             interval.destroy();
-            break;
-        case oldChan && isNewChannel:
-            interval.changeChannel( newChan );
-            break;
     }
 }
-
 class intervalMeme {
-    constructor( channel ) {
-        this.channel = channel
-
+    constructor(channel) {
+        intervalMeme[channel.guild.id] = this;
+        this.channel = channel;
         this.destroy = () => {
             console.log('destroyed');
-            clearTimeout(this.timeOut);
+            global.clearTimeout(this.timeOut);
             delete intervalMeme[channel.guild.id];
-        }
-
+        };
         this.refresh = () => {
-            this.timeOut = setTimeout( async () => {
-                playRandomMeme(this.channel)
+            this.timeOut = setTimeout(async () => {
+                playRandomMeme(this.channel);
                 this.refresh();
-            }, randomTime() )
-        }
-
-        this.changeChannel = newChannel => {
+            }, randomTime());
+        };
+        this.changeChannel = (newChannel) => {
             this.destroy();
             this.channel = newChannel;
-            this.refresh()
-        }
-
-        this.refresh();
+            this.refresh();
+        };
+        this.timeOut = setTimeout(async () => {
+            playRandomMeme(this.channel);
+            this.refresh();
+        }, randomTime());
     }
 }

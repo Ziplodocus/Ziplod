@@ -1,13 +1,12 @@
-
 import { playTheme } from '../../../helperFunctions/helpers.js';
-
 // Handles voice state updates for non-bot users
-export function handleUser( oldState, newState ) {
-    console.log(`Voice state of ${newState.member.user.tag} changed`);
+export function handleUser(oldState, newState) {
+    var _a;
+    console.log(`Voice state of ${(_a = newState.member) === null || _a === void 0 ? void 0 : _a.user.tag} changed`);
     if (oldState.channel == undefined && newState.channel !== undefined) {
-        playTheme(newState, "int")
+        playTheme(newState, "int");
     }
     else if (newState.channel == undefined && oldState.channel !== undefined) {
-        playTheme(oldState, "out")
+        playTheme(oldState, "out");
     }
 }

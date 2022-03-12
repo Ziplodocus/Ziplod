@@ -19,6 +19,7 @@ export function playSound(audioPath, channel) {
     const connection = joinVoiceChannel({
         channelId: channel.id,
         guildId: channel.guild.id,
+        // @ts-ignore Apparently due to version mismatch of Discord Api and Discord.js libraries
         adapterCreator: channel.guild.voiceAdapterCreator
     });
     const readStream = createReadStream(audioPath);
@@ -55,6 +56,7 @@ export function randomTime() {
 // Plays a random meme in the given voice channel
 export function playRandomMeme(channel) {
     console.log(channel.type);
+    // This ensures the channel is of type VoiceChannel
     if (channel.type !== "GUILD_VOICE")
         return;
     let i = 0;
@@ -62,6 +64,7 @@ export function playRandomMeme(channel) {
         i++;
     const rndInt = Math.floor(Math.random() * i);
     const audioPath = relPathTo(`./assets/soundTracks/memeTracks/meme${rndInt}.mp3`);
+    // @ts-ignore Typescript doens't seem to pick up that channel is type voiceChannel here.
     playSound(audioPath, channel);
 }
 export function pathTo(to, from = rootDir) {
