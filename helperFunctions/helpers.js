@@ -1,4 +1,4 @@
-import { joinVoiceChannel, createAudioPlayer, createAudioResource } from "@discordjs/voice";
+import { joinVoiceChannel, createAudioPlayer, createAudioResource, } from "@discordjs/voice";
 import { prefix } from "../data/config.js";
 import { client, rootDir } from "../ziplod.js";
 import { createReadStream, existsSync, readdirSync } from "fs";
@@ -8,7 +8,7 @@ import { join as joinPath, relative as relativePath } from "path";
 /////////////////////////
 // Deletes commands the last 50 commands in the given text channel
 export function delCommands(channel, time = 11000) {
-    channel.messages.fetch({ limit: 50 }).then(messages => {
+    channel.messages.fetch({ limit: 50 }).then((messages) => {
         messages
             .filter(message => message.content.startsWith(prefix) || message.author.client === client)
             .each(message => setTimeout(() => message.delete(), time));
@@ -30,9 +30,10 @@ export function playSound(audioPath, channel) {
 }
 //Determines and plays the theme music ( if any ) of a user
 export function playTheme(state, themeType) {
-    if (state.channel.type !== "GUILD_VOICE")
+    var _a, _b, _c;
+    if (((_a = state === null || state === void 0 ? void 0 : state.channel) === null || _a === void 0 ? void 0 : _a.type) !== "GUILD_VOICE")
         return;
-    const dude = state.member.user.tag;
+    const dude = (_c = (_b = state === null || state === void 0 ? void 0 : state.member) === null || _b === void 0 ? void 0 : _b.user) === null || _c === void 0 ? void 0 : _c.tag;
     let i = 0;
     while (existsSync(`./assets/soundTracks/themeSongs/${dude}/${themeType}-${i}.mp3`)) {
         i++;
@@ -53,6 +54,7 @@ export function randomTime() {
 }
 // Plays a random meme in the given voice channel
 export function playRandomMeme(channel) {
+    console.log(channel.type);
     if (channel.type !== "GUILD_VOICE")
         return;
     let i = 0;
@@ -72,6 +74,6 @@ export function relPathTo(to) {
 // Retrieves all directories within the given directory
 export function getDirs(dirPath) {
     return readdirSync(dirPath, { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
-        .map(dirent => dirent.name);
+        .filter((dirent) => dirent.isDirectory())
+        .map((dirent) => dirent.name);
 }

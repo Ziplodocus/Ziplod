@@ -7,7 +7,9 @@ export var EventWhen;
 })(EventWhen || (EventWhen = {}));
 export function establishEvents() {
     getDirs('./events').forEach(async (dirname) => {
+        console.log(dirname);
         const event = await import(`./${dirname}/${dirname}.js`);
+        console.log(event);
         client[event.type](dirname, event[dirname]);
     });
 }
