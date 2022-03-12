@@ -1,4 +1,4 @@
-import { readdirSync, writeFileSync } from 'fs';
+import { readdirSync } from 'fs';
 import { pathTo } from '../helperFunctions/helpers.js';
 // This function updates the not "JSON" file with data from the file structure indicating which dynamic sound
 // commands exist and how many tracks there are for each
@@ -15,8 +15,6 @@ async function generateTrackCache() {
         else if (soundTracks[trackType].count !== trackCount)
             soundTracks[trackType].count = trackCount;
     });
-    const fileContent = 'export const soundTracks = ' + JSON.stringify(soundTracks, null, 2);
-    writeFileSync(pathTo('./data/soundTracks.js'), fileContent);
 }
 // Function to set up the cron job (once every 24hrs) and to run once on start in case of file additions
 export function soundTracksUpdater() {
