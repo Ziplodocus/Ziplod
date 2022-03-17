@@ -5,15 +5,16 @@ export function handleBot(oldState, newState) {
     if (oldChan === newChan)
         return;
     const guildId = newState.guild.id;
-    const interval = intervalMeme[guildId];
+    let interval = IntervalMeme[guildId];
     const isJoiningNewChannel = !!newChan && (newChan !== oldChan);
     const isLeavingChannel = !newChan && !!oldChan;
     const isChangingChannel = (newChan && oldChan) && (oldChan === newChan);
-    const isNewChanVoice = (newChan === null || newChan === void 0 ? void 0 : newChan.type) === "GUILD_VOICE";
-    const isOldChanVoice = (oldChan === null || oldChan === void 0 ? void 0 : oldChan.type) === "GUILD_VOICE";
-    if (isJoiningNewChannel && newChan.type === "GUILD_VOICE")
-        new intervalMeme(newChan);
-    else if (isLeavingChannel && oldChan.type === "GUILD_VOICE")
+    const isNewChanVoice = (newChan?.type === "GUILD_VOICE");
+    const isOldChanVoice = (oldChan?.type === "GUILD_VOICE");
+    // console.log(!newChan, !!oldChan, isLeavingChannel);
+    if (isJoiningNewChannel && (newChan.type === "GUILD_VOICE"))
+        new IntervalMeme(newChan);
+    else if (isLeavingChannel && (oldChan.type === "GUILD_VOICE"))
         interval.destroy();
     else if (isChangingChannel) {
         if (!isNewChanVoice && !isOldChanVoice)
@@ -21,19 +22,24 @@ export function handleBot(oldState, newState) {
         else if (isNewChanVoice && isOldChanVoice)
             interval.changeChannel(newChan);
         else if (isNewChanVoice && !isOldChanVoice)
-            new intervalMeme(newChan);
+            new IntervalMeme(newChan);
         else if (!isNewChanVoice && isOldChanVoice)
             interval.destroy();
     }
 }
-class intervalMeme {
+class IntervalMeme {
+    channel;
+    destroy;
+    refresh;
+    changeChannel;
+    timeOut;
     constructor(channel) {
-        intervalMeme[channel.guild.id] = this;
+        IntervalMeme[channel.guild.id] = this;
         this.channel = channel;
         this.destroy = () => {
-            console.log('destroyed');
+            console.log('destroyed' + channel.guild.id);
             global.clearTimeout(this.timeOut);
-            delete intervalMeme[channel.guild.id];
+            delete IntervalMeme[channel.guild.id];
         };
         this.refresh = () => {
             this.timeOut = setTimeout(async () => {

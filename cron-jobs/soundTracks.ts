@@ -17,8 +17,8 @@ async function generateTrackCache() {
     } );
 }
 
-// Function to set up the cron job (once every 24hrs) and to run once on start in case of file additions
+// Function to set up the cron job (once every 5mins) and to run once on start in case of file additions
 export function soundTracksUpdater() {
     generateTrackCache();
-    setInterval( generateTrackCache, 1000 * 60 * 60 * 2 );
+    setInterval( generateTrackCache, 1000 * 60 * 60 * 5 );
 }

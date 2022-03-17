@@ -13,6 +13,10 @@ export function definedCommands( msg: extendedMessage ) {
 			playSound( `./assets/sounds/seinfeld.mp3`, msg.voiceChannel );
 			return msg;
 		},
+		smoothBrain() {
+			msg.message.reply('Smoother than yours.');
+			return msg;
+		},
 		obliterate() {
 			if ( msg.message.channel.type !== "GUILD_TEXT" ) return;
 			const time = msg.voiceChannel ? 11000 : 0;
@@ -76,7 +80,7 @@ export function definedCommands( msg: extendedMessage ) {
 			const themessage = await msg.message.channel.send( messageOptions );
 			const collector = themessage.createMessageComponentCollector( {
 				componentType: "BUTTON",
-				time: 3000
+				time: 120000
 			} );
 			collector.on( "collect", async i => {
 				if ( !( i?.member?.roles instanceof GuildMemberRoleManager ) ) return;
@@ -125,5 +129,5 @@ function checkValidity( msg: extendedMessage ) {
 		msg.message.reply( "This is rather embarassing but I do not have the power for this..." );
 		return false;
 	}
-	return false;
+	return true;
 }

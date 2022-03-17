@@ -3,7 +3,7 @@ import { prefix } from "../data/config.js";
 import { client, rootDir } from "../ziplod.js";
 import { createReadStream, existsSync, readdirSync } from "fs";
 import { join as joinPath, relative as relativePath } from "path";
-//////////////////////////
+/////////////////////////
 //      FUNCTIONS      //
 /////////////////////////
 // Deletes commands the last 50 commands in the given text channel
@@ -31,10 +31,9 @@ export function playSound(audioPath, channel) {
 }
 //Determines and plays the theme music ( if any ) of a user
 export function playTheme(state, themeType) {
-    var _a, _b, _c;
-    if (((_a = state === null || state === void 0 ? void 0 : state.channel) === null || _a === void 0 ? void 0 : _a.type) !== "GUILD_VOICE")
+    if (state?.channel?.type !== "GUILD_VOICE")
         return;
-    const dude = (_c = (_b = state === null || state === void 0 ? void 0 : state.member) === null || _b === void 0 ? void 0 : _b.user) === null || _c === void 0 ? void 0 : _c.tag;
+    const dude = state?.member?.user?.tag;
     let i = 0;
     while (existsSync(`./assets/soundTracks/themeSongs/${dude}/${themeType}-${i}.mp3`)) {
         i++;
@@ -55,7 +54,6 @@ export function randomTime() {
 }
 // Plays a random meme in the given voice channel
 export function playRandomMeme(channel) {
-    console.log(channel.type);
     // This ensures the channel is of type VoiceChannel
     if (channel.type !== "GUILD_VOICE")
         return;

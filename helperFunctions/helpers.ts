@@ -9,7 +9,7 @@ import { createReadStream, existsSync, readdirSync } from "fs";
 import { join as joinPath, relative as relativePath } from "path";
 import { Channel, TextChannel, VoiceChannel, VoiceState } from "discord.js";
 
-//////////////////////////
+/////////////////////////
 //      FUNCTIONS      //
 /////////////////////////
 
@@ -62,7 +62,6 @@ export function randomTime() {
 
 // Plays a random meme in the given voice channel
 export function playRandomMeme( channel: Channel ) {
-	console.log( channel.type );
 	// This ensures the channel is of type VoiceChannel
 	if ( channel.type !== "GUILD_VOICE" ) return;
 	let i = 0;
