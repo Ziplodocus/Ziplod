@@ -1,3 +1,11 @@
 
 node_modules/
-data/*
+/*
+!src
+!src/*
+!package.json
+!package-lock.json
+!README.md
+!tsconfig.json
+!assets
+data/
