@@ -7,7 +7,7 @@ export type Command = {
 
 export default async ( msg: extendedMessage ) => {
 	try {
-		const command = await import( `./definedCommands/${msg.command}.js` );
+		const { default: command } = await import( `./definedCommands/${msg.command}.js` );
 		command( msg );
 		return true;
 	} catch {

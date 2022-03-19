@@ -21,8 +21,8 @@ export default class {
             const theChannel = recipientVoiceChan || authorVoiceChan;
             return theChannel?.type === 'GUILD_VOICE' ? theChannel : undefined;
         };
-        this.runCommand = () => {
-            runDefinedCommand( this )
+        this.runCommand = async () => {
+            await runDefinedCommand( this )
                 || runDynamicCommand( this )
                 || this.message.reply( '\n That is not one of my many powerful commands tiny person' );
         };
