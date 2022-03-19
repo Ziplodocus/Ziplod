@@ -4,7 +4,7 @@ import { soundTracks } from '../../../cron-jobs/soundTracks.js';
 import { relPathTo } from '../../../helperFunctions/helpers.js';
 import extendedMessage from '../../../classes/extendedMessage.js';
 
-export default ( msg: extendedMessage ) => {
+export default async ( msg: extendedMessage ) => {
     const voiceChan = msg.voiceChannel();
     if ( !soundTracks[msg.command] ) return false;
     if ( !voiceChan ) {

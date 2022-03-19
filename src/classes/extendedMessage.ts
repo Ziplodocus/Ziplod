@@ -23,7 +23,7 @@ export default class {
         };
         this.runCommand = async () => {
             await runDefinedCommand( this )
-                || runDynamicCommand( this )
+                || await runDynamicCommand( this )
                 || this.message.reply( '\n That is not one of my many powerful commands tiny person' );
         };
     }
