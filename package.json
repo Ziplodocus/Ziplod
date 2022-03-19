@@ -5,7 +5,7 @@
   "main": "ziplod.js",
   "type": "module",
   "scripts": {
-    "start": "node ziplod.js",
+    "start": "tsc && node ziplod.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

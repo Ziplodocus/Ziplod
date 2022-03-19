@@ -22,7 +22,8 @@ export default async ( msg: extendedMessage ) => {
         response.body.pipe(
             createWriteStream( filePath )
         );
-        generateTrackCache();
+        // Gives a bit of time for the file to establish on the system. Was having issues without the timeout.
+        setTimeout( generateTrackCache, 2000 );
         return true;
     } catch ( error ) {
         console.log( error );

@@ -9,7 +9,7 @@ export default async ( msg: extendedMessage ) => {
     if ( !soundTracks[msg.command] ) return false;
     if ( !voiceChan ) {
         msg.message.reply( '\n Someone has to be in a voice channel, don\'t they? idiot.' );
-        return false;
+        return true;
     }
 
     // Filters args to only numbers
