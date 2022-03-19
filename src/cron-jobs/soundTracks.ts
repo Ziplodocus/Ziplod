@@ -1,5 +1,5 @@
-import { readdirSync, writeFileSync } from 'fs';
-import { pathTo } from '../helperFunctions/helpers.js';
+import { readdirSync } from 'fs';
+import { pathTo } from '../helperFunctions/helpers';
 
 // This function updates the not "JSON" file with data from the file structure indicating which dynamic sound
 // commands exist and how many tracks there are for each

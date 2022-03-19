@@ -1,7 +1,7 @@
 
-import { client } from '../ziplod.js';
+import { client } from '../ziplod';
 import { ClientEvents } from 'discord.js';
-import { getDirs } from '../helperFunctions/helpers.js';
+import { getDirs } from '../helperFunctions/helpers';
 
 export enum EventWhen {
     "on" = "on",

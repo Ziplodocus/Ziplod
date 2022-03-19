@@ -3,11 +3,12 @@ import {
 	createAudioPlayer,
 	createAudioResource,
 } from "@discordjs/voice";
-import { prefix } from "../data/config.js";
-import { client, rootDir } from "../ziplod.js";
+import { prefix } from "../data/config";
+import { client, rootDir } from "../ziplod";
 import { createReadStream, existsSync, readdirSync } from "fs";
 import { join as joinPath, relative as relativePath } from "path";
 import { Channel, TextChannel, VoiceChannel, VoiceState } from "discord.js";
+import { soundTracks } from "../cron-jobs/soundTracks";
 
 /////////////////////////
 //      FUNCTIONS      //
@@ -55,7 +56,7 @@ export function playTheme( state: VoiceState, themeType: string ) {
 	playSound( themePath, voiceChan );
 }
 
-// Returns a random time between 10 seconds and 10 minutes
+// Returns a random time between 5 and 25 minutes
 export function randomTime() {
 	return 1000 * 60 * 5 + Math.random() * 1000 * 60 * 25;
 }
@@ -64,11 +65,10 @@ export function randomTime() {
 export function playRandomMeme( channel: Channel ) {
 	// This ensures the channel is of type VoiceChannel
 	if ( channel.type !== "GUILD_VOICE" ) return;
-	let i = 0;
-	while ( existsSync( `./assets/soundTracks/memeTracks/meme${i}.mp3` ) ) i++;
-	const rndInt = Math.floor( Math.random() * i );
+	const memeCount = soundTracks.meme.count;
+	const rndInt = Math.floor( Math.random() * memeCount );
 	const audioPath = relPathTo(
-		`./assets/soundTracks/memeTracks/meme${rndInt}.mp3`
+		`assets/soundTracks/memeTracks/meme${rndInt}.mp3`
 	);
 	// @ts-ignore Typescript doens't seem to pick up that channel is type voiceChannel here.
 	playSound( audioPath, channel );
