@@ -1,8 +1,8 @@
 // Importing modules
 import { Client, Intents } from "discord.js";
-import { token } from "./data/config";
-import { establishEvents } from "./events/events";
-import { soundTracksUpdater } from "./cron-jobs/soundTracks";
+import { token } from "./data/config.js";
+import { establishEvents } from "./events/events.js";
+import { soundTracksUpdater } from "./cron-jobs/soundTracks.js";
 
 // Defining root directory of project
 export const rootDir = new URL( '.', import.meta.url ).pathname.replace( '/', '' );

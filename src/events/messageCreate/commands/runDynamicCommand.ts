@@ -1,8 +1,8 @@
 
-import { playSound } from '../../../helperFunctions/helpers';
-import { soundTracks } from '../../../cron-jobs/soundTracks';
-import { relPathTo } from '../../../helperFunctions/helpers';
-import extendedMessage from '../../../classes/extendedMessage';
+import { playSound } from '../../../helperFunctions/helpers.js';
+import { soundTracks } from '../../../cron-jobs/soundTracks.js';
+import { relPathTo } from '../../../helperFunctions/helpers.js';
+import extendedMessage from '../../../classes/extendedMessage.js';
 
 export default ( msg: extendedMessage ) => {
     const voiceChan = msg.voiceChannel();

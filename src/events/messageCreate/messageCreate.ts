@@ -1,7 +1,7 @@
 
-import { EventWhen } from '../events';
+import { EventWhen } from '../events.js';
 import { Client, Message } from 'discord.js';
-import extendedMessage from '../../classes/extendedMessage';
+import extendedMessage from '../../classes/extendedMessage.js';
 
 export const type: keyof Client = EventWhen.on;
 

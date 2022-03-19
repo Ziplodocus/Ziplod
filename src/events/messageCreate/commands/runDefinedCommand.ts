@@ -1,4 +1,4 @@
-import extendedMessage from "../../../classes/extendedMessage";
+import extendedMessage from "../../../classes/extendedMessage.js";
 
 export type Command = {
 	name: string,
@@ -7,7 +7,7 @@ export type Command = {
 
 export default async ( msg: extendedMessage ) => {
 	try {
-		const command = await import( `./definedCommands/${msg.command}` );
+		const command = await import( `./definedCommands/${msg.command}.js` );
 		command( msg );
 		return true;
 	} catch {

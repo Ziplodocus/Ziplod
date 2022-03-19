@@ -1,5 +1,5 @@
 import { VoiceChannel, VoiceState } from 'discord.js';
-import { randomTime, playRandomMeme } from '../../../helperFunctions/helpers';
+import { randomTime, playRandomMeme } from '../../../helperFunctions/helpers.js';
 
 export function handleBot( oldState: VoiceState, newState: VoiceState ) {
     const newChan = newState.channel;

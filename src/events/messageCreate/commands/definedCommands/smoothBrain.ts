@@ -1,4 +1,4 @@
-import extendedMessage from "../../../../classes/extendedMessage";
+import extendedMessage from "../../../../classes/extendedMessage.js";
 
 
 export default ( msg: extendedMessage ) => {

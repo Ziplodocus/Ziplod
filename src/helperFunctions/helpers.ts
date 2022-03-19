@@ -3,12 +3,12 @@ import {
 	createAudioPlayer,
 	createAudioResource,
 } from "@discordjs/voice";
-import { prefix } from "../data/config";
-import { client, rootDir } from "../ziplod";
+import { prefix } from "../data/config.js";
+import { client, rootDir } from "../ziplod.js";
 import { createReadStream, existsSync, readdirSync } from "fs";
 import { join as joinPath, relative as relativePath } from "path";
 import { Channel, TextChannel, VoiceChannel, VoiceState } from "discord.js";
-import { soundTracks } from "../cron-jobs/soundTracks";
+import { soundTracks } from "../cron-jobs/soundTracks.js";
 
 /////////////////////////
 //      FUNCTIONS      //

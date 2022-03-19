@@ -1,5 +1,5 @@
-import extendedMessage from "../classes/extendedMessage";
-import { client } from "../ziplod";
+import extendedMessage from "../classes/extendedMessage.js";
+import { client } from "../ziplod.js";
 
 export default ( msg: extendedMessage ) => {
     const guildId = msg.message.guild?.id;

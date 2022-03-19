@@ -1,7 +1,7 @@
 import { Message, VoiceChannel } from "discord.js";
-import { prefix } from "../data/config";
-import runDefinedCommand from "../events/messageCreate/commands/runDefinedCommand";
-import runDynamicCommand from "../events/messageCreate/commands/runDynamicCommand";
+import { prefix } from "../data/config.js";
+import runDefinedCommand from "../events/messageCreate/commands/runDefinedCommand.js";
+import runDynamicCommand from "../events/messageCreate/commands/runDynamicCommand.js";
 
 export default class {
     command: string;
