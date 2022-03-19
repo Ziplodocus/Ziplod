@@ -1,6 +1,11 @@
 
 node_modules/
-config.json
-config.js
-data/soundTracks.js
-data/soundTracks.json
+/*
+!src
+!src/*
+!package.json
+!package-lock.json
+!README.md
+!tsconfig.json
+!assets
+data/
