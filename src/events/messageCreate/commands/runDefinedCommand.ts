@@ -10,7 +10,7 @@ export default async ( msg: extendedMessage ) => {
 		const { default: command } = await import( `./definedCommands/${msg.command}.js` );
 		command( msg );
 		return true;
-	} catch {
+	} catch ( err ) {
 		return false;
 	}
 };

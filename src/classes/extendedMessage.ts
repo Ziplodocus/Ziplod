@@ -12,8 +12,8 @@ export default class {
     runCommand: () => void;
     constructor( message: Message ) {
         this.message = message;
-        this.command = message.content.substring( prefix.length ).split( ' ' )[0];
-        this.args = message.content.substring( prefix.length + this.command.length + 1 ).split( ' ' );
+        this.command = message.content.substring( prefix.length ).toLowerCase().split( ' ' )[0];
+        this.args = message.content.substring( prefix.length + this.command.length + 1 ).toLowerCase().split( ' ' );
         this.isCommand = message.content.startsWith( prefix );
         this.voiceChannel = () => {
             const recipientVoiceChan = message?.mentions?.members?.first()?.voice?.channel;
@@ -22,8 +22,8 @@ export default class {
             return theChannel?.type === 'GUILD_VOICE' ? theChannel : undefined;
         };
         this.runCommand = async () => {
-            await runDefinedCommand( this )
-                || await runDynamicCommand( this )
+            ( await runDefinedCommand( this ) )
+                || ( await runDynamicCommand( this ) )
                 || this.message.reply( '\n That is not one of my many powerful commands tiny person' );
         };
     }

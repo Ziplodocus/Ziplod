@@ -5,7 +5,7 @@ import { pathTo } from '../helperFunctions/helpers.js';
 // commands exist and how many tracks there are for each
 export let soundTracks: { [index: string]: { [index: string]: number; }; } = {};
 
-async function generateTrackCache() {
+export async function generateTrackCache() {
     const audioDir = './assets/soundTracks';
     const soundTracksFolders = readdirSync( audioDir );
     const cacheable = soundTracksFolders.filter( folder => folder.endsWith( 'Tracks' ) );
