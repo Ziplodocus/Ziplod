@@ -9,7 +9,7 @@ export function handleBot( oldState: VoiceState, newState: VoiceState ) {
     const guildId = newState.guild.id;
     let interval = IntervalMeme[guildId];
 
-    const isJoiningNewChannel = !!newChan && ( newChan !== oldChan );
+    const isJoiningNewChannel = !!newChan && ( newChan !== oldChan ) && !oldChan;
     const isLeavingChannel = !newChan && !!oldChan;
     const isChangingChannel = ( newChan && oldChan ) && ( oldChan === newChan );
     const isNewChanVoice = ( newChan?.type === "GUILD_VOICE" );
