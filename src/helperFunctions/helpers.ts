@@ -1,11 +1,11 @@
 import {
 	joinVoiceChannel,
 	createAudioPlayer,
-	createAudioResource,
+	createAudioResource
 } from "@discordjs/voice";
 import { prefix } from "../data/config.js";
 import { client, rootDir } from "../ziplod.js";
-import { createReadStream, existsSync, readdirSync } from "fs";
+import { createReadStream, existsSync, readdirSync, ReadStream } from "fs";
 import { join as joinPath, relative as relativePath } from "path";
 import { Channel, TextChannel, VoiceChannel, VoiceState } from "discord.js";
 import { soundTracks } from "../cron-jobs/soundTracks.js";
@@ -24,19 +24,22 @@ export function delCommands( channel: TextChannel, time = 11000 ) {
 }
 
 // Plays in the given channel the audio file at the given file path
-export function playSound( audioPath: string, channel: VoiceChannel ) {
+export async function playSound( audioPath: string, channel: VoiceChannel ) {
+	const readStream = createReadStream( audioPath );
+	playAudioStream(readStream, channel);
+}
+
+export async function playAudioStream(stream : string | ReadStream, channel : VoiceChannel) {
 	const connection = joinVoiceChannel( {
 		channelId: channel.id,
 		guildId: channel.guild.id,
 		// @ts-ignore Apparently due to version mismatch of Discord Api and Discord.js libraries
 		adapterCreator: channel.guild.voiceAdapterCreator
 	} );
-	const readStream = createReadStream( audioPath );
 	const player = createAudioPlayer();
-	const resource = createAudioResource( readStream );
-	player.play( resource );
-	connection.subscribe( player );
-	console.log( `Now playing... ${audioPath} in ${channel.name}` );
+	const resource = createAudioResource(stream);
+	connection.subscribe(player);
+	player.play(resource);
 }
 
 //Determines and plays the theme music ( if any ) of a user
