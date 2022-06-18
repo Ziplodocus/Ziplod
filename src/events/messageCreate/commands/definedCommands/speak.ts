@@ -6,11 +6,11 @@ export default async function(msg : extendedMessage) {
     const voiceChan = msg.voiceChannel();
     if (!voiceChan) return msg.message.reply( "\n Someone has to be in a voice channel don' they? idiot." );
     const stringToSpeak = msg.args.join(' ');
-    const audioStream = await fetchAudioStreamFromString(stringToSpeak);
+    const audioStream = await fetchAudioBase64FromString(stringToSpeak);
     playAudioStream(audioStream, voiceChan);
 }
 
-async function fetchAudioStreamFromString(string: string) : Promise<string> {
+async function fetchAudioBase64FromString(string: string) : Promise<string> {
     const options : RequestInit  = {
         headers: {
             authorization: `Bearer ${textToSpeechAuth}`,
