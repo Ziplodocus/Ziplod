@@ -1,16 +1,15 @@
 import {
 	joinVoiceChannel,
 	createAudioPlayer,
-	createAudioResource,
-	VoiceConnection,
+	createAudioResource
 } from "@discordjs/voice";
 import { prefix } from "../data/config.js";
 import { client, rootDir } from "../ziplod.js";
-import { createReadStream, existsSync, readdirSync } from "fs";
+import { createReadStream, existsSync, readdirSync, ReadStream } from "fs";
 import { join as joinPath, relative as relativePath } from "path";
 import { Channel, TextChannel, VoiceChannel, VoiceState } from "discord.js";
 import { soundTracks } from "../cron-jobs/soundTracks.js";
-import { Readable } from "stream";
+import { Readable } from 'stream';
 
 /////////////////////////
 //      FUNCTIONS      //
@@ -27,22 +26,22 @@ export function delCommands( channel: TextChannel, time = 11000 ) {
 
 // Plays in the given channel the audio file at the given file path
 export async function playSound( audioPath: string, channel: VoiceChannel ) {
+	console.log('Attempting to play sound: ' + audioPath + ' in channel: ' + channel.name);
+	const readStream = createReadStream( audioPath );
+	playAudioStream(readStream, channel);
+}
+
+export async function playAudioStream(stream : string | ReadStream | Readable, channel : VoiceChannel) {
 	const connection = joinVoiceChannel( {
 		channelId: channel.id,
 		guildId: channel.guild.id,
 		// @ts-ignore Apparently due to version mismatch of Discord Api and Discord.js libraries
 		adapterCreator: channel.guild.voiceAdapterCreator
 	} );
-	const readStream = createReadStream( audioPath );
-	playAudioStreamToConnection(readStream, connection);
-	console.log( `Now playing... ${audioPath} in ${channel.name}` );
-}
-
-export function playAudioStreamToConnection( audioStream: string | Readable, connection : VoiceConnection ) {
 	const player = createAudioPlayer();
-	const resource = createAudioResource( audioStream );
-	player.play( resource );
-	connection.subscribe( player );
+	const resource = createAudioResource(stream);
+	connection.subscribe(player);
+	player.play(resource);
 }
 
 
