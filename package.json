@@ -5,6 +5,7 @@
   "main": "ziplod.js",
   "type": "module",
   "scripts": {
+    "build" : "tsc",
     "start": "tsc && node ziplod.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -28,5 +29,8 @@
     "discord.js": "^13.1.0",
     "ffmpeg-static": "^4.4.0",
     "libsodium-wrappers": "^0.7.9"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.4"
   }
 }
