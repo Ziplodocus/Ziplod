@@ -9,6 +9,7 @@ import { createReadStream, existsSync, readdirSync, ReadStream } from "fs";
 import { join as joinPath, relative as relativePath } from "path";
 import { Channel, TextChannel, VoiceChannel, VoiceState } from "discord.js";
 import { soundTracks } from "../cron-jobs/soundTracks.js";
+import { Readable } from 'stream';
 
 /////////////////////////
 //      FUNCTIONS      //
@@ -29,7 +30,7 @@ export async function playSound( audioPath: string, channel: VoiceChannel ) {
 	playAudioStream(readStream, channel);
 }
 
-export async function playAudioStream(stream : string | ReadStream, channel : VoiceChannel) {
+export async function playAudioStream(stream : string | ReadStream | Readable, channel : VoiceChannel) {
 	const connection = joinVoiceChannel( {
 		channelId: channel.id,
 		guildId: channel.guild.id,
