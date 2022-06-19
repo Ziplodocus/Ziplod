@@ -26,6 +26,7 @@ export function delCommands( channel: TextChannel, time = 11000 ) {
 
 // Plays in the given channel the audio file at the given file path
 export async function playSound( audioPath: string, channel: VoiceChannel ) {
+	console.log('Attempting to play sound: ' + audioPath + ' in channel: ' + channel.name);
 	const readStream = createReadStream( audioPath );
 	playAudioStream(readStream, channel);
 }
