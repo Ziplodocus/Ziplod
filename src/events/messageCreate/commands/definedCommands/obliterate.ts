@@ -1,5 +1,6 @@
 import extendedMessage from "../../../../classes/extendedMessage.js";
-import { delCommands, playSound } from "../../../../helperFunctions/helpers.js";
+import { delCommands } from "../../../../utility/other.js";
+import { playSound } from "../../../../utility/sounds.js";
 
 export default async ( msg: extendedMessage ) => {
     if ( msg.message.channel.type !== "GUILD_TEXT" ) return;

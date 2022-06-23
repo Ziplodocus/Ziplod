@@ -1,5 +1,5 @@
 import extendedMessage from "../../../../classes/extendedMessage.js";
-import checkPermissions from "../../../../helperFunctions/checkPermissions.js";
+import checkPermissions from "../../../../utility/checkPermissions.js";
 
 export default async ( msg: extendedMessage ) => {
     if ( !checkPermissions( msg ) ) return;
