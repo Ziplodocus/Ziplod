@@ -1,6 +1,6 @@
 
 import { VoiceState } from 'discord.js';
-import { playTheme } from '../../../helperFunctions/helpers.js';
+import { playTheme } from '../../../utility/sounds.js';
 
 // Handles voice state updates for non-bot users
 export function handleUser( oldState: VoiceState, newState: VoiceState ) {

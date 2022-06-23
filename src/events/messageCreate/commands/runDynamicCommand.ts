@@ -1,7 +1,7 @@
 
-import { playSound } from '../../../helperFunctions/helpers.js';
+import { playSound } from '../../../utility/sounds.js';
 import { soundTracks } from '../../../cron-jobs/soundTracks.js';
-import { relPathTo } from '../../../helperFunctions/helpers.js';
+import { relPathTo } from '../../../utility/paths.js';
 import extendedMessage from '../../../classes/extendedMessage.js';
 
 export default async ( msg: extendedMessage ) => {

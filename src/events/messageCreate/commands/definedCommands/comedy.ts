@@ -1,5 +1,5 @@
 import extendedMessage from "../../../../classes/extendedMessage.js";
-import { playSound } from "../../../../helperFunctions/helpers.js";
+import { playSound } from "../../../../utility/sounds.js";
 
 export default async ( msg: extendedMessage ) => {
     const voiceChan = msg.voiceChannel();

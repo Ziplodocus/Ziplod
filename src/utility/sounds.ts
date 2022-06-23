@@ -3,26 +3,17 @@ import {
 	createAudioPlayer,
 	createAudioResource
 } from "@discordjs/voice";
-import { prefix } from "../data/config.js";
-import { client, rootDir } from "../ziplod.js";
-import { createReadStream, existsSync, readdirSync, ReadStream } from "fs";
-import { join as joinPath, relative as relativePath } from "path";
-import { Channel, TextChannel, VoiceChannel, VoiceState } from "discord.js";
+import { createReadStream, existsSync, ReadStream } from "fs";
+import { Channel, VoiceChannel, VoiceState } from "discord.js";
 import { soundTracks } from "../cron-jobs/soundTracks.js";
 import { Readable } from 'stream';
+import { relPathTo } from "./paths.js";
+import { langTags, textToSpeechAuth } from "../data/config.js";
+import fetch from 'node-fetch';
 
 /////////////////////////
 //      FUNCTIONS      //
 /////////////////////////
-
-// Deletes commands the last 50 commands in the given text channel
-export function delCommands( channel: TextChannel, time = 11000 ) {
-	channel.messages.fetch( { limit: 50 } ).then( ( messages ) => {
-		messages
-			.filter( message => message.content.startsWith( prefix ) || message.author.client === client )
-			.each( message => setTimeout( () => message.delete(), time ) );
-	} );
-}
 
 // Plays in the given channel the audio file at the given file path
 export async function playSound( audioPath: string, channel: VoiceChannel ) {
@@ -44,6 +35,52 @@ export async function playAudioStream(stream : string | ReadStream | Readable, c
 	player.play(resource);
 }
 
+export async function speak(text: string, voiceChan : VoiceChannel) {
+    const stream = await fetchAudioStreamFromString(text);
+    if(stream) {
+        playAudioStream(stream, voiceChan);
+        console.log('Saying '+text+' in channel: '+voiceChan.name);
+        return true;
+    } else {
+        console.log('Speaking failed :o');
+        return false;
+    }
+}
+
+// Returns a readable Audiostream, from text, by calling the Google TTS api.
+export async function fetchAudioStreamFromString(string: string) : Promise<Readable | undefined> {
+    const options = {
+        headers: {
+            "content-type": "application/json; charset=utf8",
+        },
+        method: "POST",
+        body: JSON.stringify({
+            input: {
+                text: string
+            },
+            voice: {
+                languageCode: (langTags[Math.round(Math.random() * langTags.length)]),
+                ssmlGender: (Math.random() > 0.5) ? "MALE" : "FEMALE"
+            },
+            audioConfig: {
+                audioEncoding: "MP3"
+            }
+        }),
+    }
+    console.log(options);
+    const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${textToSpeechAuth}`, options);
+    const {audioContent} = await response.json();
+    if(response.status !== 200) {
+        console.error("Text to speech error!: "+response.status+' '+response.statusText);
+        return undefined;
+    }
+    // decode base64 as mp3
+    const base64Decoded = Buffer.from(audioContent, 'base64');
+    const readable = new Readable();
+    readable.push(base64Decoded);
+    readable.push(null);
+    return readable;
+}
 
 //Determines and plays the theme music ( if any ) of a user
 export function playTheme( state: VoiceState, themeType: string ) {
@@ -62,11 +99,6 @@ export function playTheme( state: VoiceState, themeType: string ) {
 	playSound( themePath, voiceChan );
 }
 
-// Returns a random time between 5 and 25 minutes
-export function randomTime() {
-	return 1000 * 60 * 5 + Math.random() * 1000 * 60 * 25;
-}
-
 // Plays a random meme in the given voice channel
 export function playRandomMeme( channel: Channel ) {
 	// This ensures the channel is of type VoiceChannel
@@ -78,19 +110,4 @@ export function playRandomMeme( channel: Channel ) {
 	);
 	// @ts-ignore Typescript doens't seem to pick up that channel is type voiceChannel here.
 	playSound( audioPath, channel );
-}
-
-export function pathTo( to: string, from = rootDir ) {
-	return joinPath( from, to );
-}
-export function relPathTo( to: string ) {
-	const toPath = pathTo( to );
-	return relativePath( ".", toPath );
-}
-
-// Retrieves all directories within the given directory
-export function getDirs( dirPath: string ) {
-	return readdirSync( dirPath, { withFileTypes: true } )
-		.filter( ( dirent ) => dirent.isDirectory() )
-		.map( ( dirent ) => dirent.name );
 }
