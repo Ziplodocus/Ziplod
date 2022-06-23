@@ -7,7 +7,7 @@ import {Readable} from 'stream';
 export default async function(msg : extendedMessage) {
     const voiceChan = msg.voiceChannel();
     if (!voiceChan) return msg.message.reply( "\n Someone has to be in a voice channel don' they? idiot." );
-    const stringToSpeak = msg.args.join(' ');
+    const stringToSpeak = msg.args.filter(arg => !arg.startsWith('<@')).join(' ');
     const audioStream = await fetchAudioBase64FromString(stringToSpeak);
     if(!audioStream) return msg.message.reply('There was an error with the request!');
     playAudioStream(audioStream, voiceChan);
