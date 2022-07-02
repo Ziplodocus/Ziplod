@@ -3,12 +3,11 @@ import {
 	createAudioPlayer,
 	createAudioResource
 } from "@discordjs/voice";
-import { createReadStream, existsSync, ReadStream } from "fs";
+import { existsSync, ReadStream } from "fs";
 import { Channel, VoiceChannel, VoiceState } from "discord.js";
-import { soundTracks } from "../cron-jobs/soundTracks.js";
 import { Readable } from 'stream';
-import { relPathTo } from "./paths.js";
-import { langTags, textToSpeechAuth } from "../data/config.js";
+import { langTags, ttsAuth } from "../data/config.js";
+import { Storage } from '../ziplod.js';
 import fetch from 'node-fetch';
 
 /////////////////////////
@@ -16,10 +15,10 @@ import fetch from 'node-fetch';
 /////////////////////////
 
 // Plays in the given channel the audio file at the given file path
-export async function playSound( audioPath: string, channel: VoiceChannel ) {
-	console.log('Attempting to play sound: ' + audioPath + ' in channel: ' + channel.name);
-	const readStream = createReadStream( audioPath );
-	playAudioStream(readStream, channel);
+export async function playSound( name : string, channel: VoiceChannel ) {
+	console.log('Attempting to play sound: ' + name + ' in channel: ' + channel.name);
+	const soundStream = await Storage.getSound(name);
+	playAudioStream(soundStream, channel);
 }
 
 export async function playAudioStream(stream : string | ReadStream | Readable, channel : VoiceChannel) {
@@ -67,8 +66,7 @@ export async function fetchAudioStreamFromString(string: string) : Promise<Reada
             }
         }),
     }
-    console.log(options);
-    const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${textToSpeechAuth}`, options);
+    const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${ttsAuth}`, options);
     const {audioContent} = await response.json();
     if(response.status !== 200) {
         console.error("Text to speech error!: "+response.status+' '+response.statusText);
@@ -83,31 +81,23 @@ export async function fetchAudioStreamFromString(string: string) : Promise<Reada
 }
 
 //Determines and plays the theme music ( if any ) of a user
-export function playTheme( state: VoiceState, themeType: string ) {
+export async function playTheme( state: VoiceState, themeType: string ) {
 	if ( state?.channel?.type !== "GUILD_VOICE" ) return;
 	const dude = state?.member?.user?.tag;
-	let i = 0;
-	while ( existsSync( `./assets/soundTracks/themeSongs/${dude}/${themeType}-${i}.mp3` ) ) { i++; }
-	if ( i === 0 ) {
-		console.log( `No ${themeType} music for ${dude}` );
-		return false;
-	}
-	const randThemeNo = Math.floor( Math.random() * i );
-	const themePath = `./assets/soundTracks/themeSongs/${dude}/${themeType}-${randThemeNo}.mp3`;
+    if (!dude) return false;
 	const voiceChan = state.channel;
+    const themeStream = await Storage.getTheme(dude, themeType);
 	console.log( `Playing ${dude}'s ${themeType}ro music` );
-	playSound( themePath, voiceChan );
+	playAudioStream( themeStream, voiceChan );
 }
 
 // Plays a random meme in the given voice channel
-export function playRandomMeme( channel: Channel ) {
+export async function playRandomMeme( channel: Channel ) {
 	// This ensures the channel is of type VoiceChannel
 	if ( channel.type !== "GUILD_VOICE" ) return;
-	const memeCount = soundTracks.meme.count;
+	const memeCount = Storage.trackCount.meme;
 	const rndInt = Math.floor( Math.random() * memeCount );
-	const audioPath = relPathTo(
-		`assets/soundTracks/memeTracks/meme${rndInt}.mp3`
-	);
+    const memeStream = await Storage.getTrack('meme', rndInt);
 	// @ts-ignore Typescript doens't seem to pick up that channel is type voiceChannel here.
-	playSound( audioPath, channel );
+	playAudioStream( memeStream, channel );
 }

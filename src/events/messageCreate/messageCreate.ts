@@ -1,14 +1,14 @@
 
 import { EventWhen } from '../events.js';
 import { Client, Message } from 'discord.js';
-import extendedMessage from '../../classes/extendedMessage.js';
+import ExtendedMessage from '../../classes/ExtendedMessage.js';
 
 export const type: keyof Client = EventWhen.on;
 
 export function messageCreate( message: Message ) {
 
     // Extends the message object with the handlers and other utility methods
-    const extMessage = new extendedMessage( message );
+    const extMessage = new ExtendedMessage( message );
 
     // If message doesn't begin with the prefix or if the author of the message is the bot then ignore.
     if ( !extMessage.isCommand || extMessage.message.author.bot ) return;

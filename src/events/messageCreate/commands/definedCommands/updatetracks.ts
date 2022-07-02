@@ -1,8 +1,8 @@
-import extendedMessage from "../../../../classes/extendedMessage.js";
-import { generateTrackCache, soundTracks } from "../../../../cron-jobs/soundTracks.js";
+import ExtendedMessage from "../../../../classes/ExtendedMessage.js";
+import {Storage} from "../../../../ziplod.js";
 
 
-export default async ( msg: extendedMessage ) => {
-    generateTrackCache();
+export default async ( msg: ExtendedMessage ) => {
+    Storage.updateTrackCount();
     return msg;
 };

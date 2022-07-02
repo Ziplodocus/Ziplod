@@ -1,8 +1,8 @@
 import {writeFileSync} from 'fs';
-import { textToSpeechAuth } from '../data/config';
+import { ttsAuth } from '../data/config';
 
 export default async () => {
-	const voicesres = await fetch('https://texttospeech.googleapis.com/v1/voices?key='+textToSpeechAuth);
+	const voicesres = await fetch('https://texttospeech.googleapis.com/v1/voices?key='+ttsAuth);
 	const {voices} = await voicesres.json();
 	let codes: string[] = [];
 	voices.forEach((element: { languageCodes: string[]; }) => {

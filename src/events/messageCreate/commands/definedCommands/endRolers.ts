@@ -1,7 +1,7 @@
-import extendedMessage from "../../../../classes/extendedMessage.js";
+import ExtendedMessage from "../../../../classes/ExtendedMessage.js";
 import checkPermissions from "../../../../utility/checkPermissions.js";
 
-export default async ( msg: extendedMessage ) => {
+export default async ( msg: ExtendedMessage ) => {
     if ( !checkPermissions( msg ) ) return;
     let argRole = msg.args.join( " " ) || "Custom Gamer";
     let replyData: string[] = [];

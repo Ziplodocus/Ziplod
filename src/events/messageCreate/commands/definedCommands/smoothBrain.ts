@@ -1,7 +1,7 @@
-import extendedMessage from "../../../../classes/extendedMessage.js";
+import ExtendedMessage from "../../../../classes/ExtendedMessage.js";
 
 
-export default async function( msg: extendedMessage ) {
+export default async function( msg: ExtendedMessage ) {
     msg.message.reply( 'Smoother than yours.' );
     return msg;
 };

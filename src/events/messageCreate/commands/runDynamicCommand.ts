@@ -1,12 +1,11 @@
 
-import { playSound } from '../../../utility/sounds.js';
-import { soundTracks } from '../../../cron-jobs/soundTracks.js';
-import { relPathTo } from '../../../utility/paths.js';
-import extendedMessage from '../../../classes/extendedMessage.js';
+import { playAudioStream } from '../../../utility/sounds.js';
+import ExtendedMessage from '../../../classes/ExtendedMessage.js';
+import {Storage} from '../../../ziplod.js';
 
-export default async ( msg: extendedMessage ) => {
+export default async ( msg: ExtendedMessage ) => {
     const voiceChan = msg.voiceChannel();
-    if ( !soundTracks[msg.command] ) return false;
+    if ( !Storage.trackCount[msg.command] ) return false;
     if ( !voiceChan ) {
         msg.message.reply( '\n Someone has to be in a voice channel, don\'t they? idiot.' );
         return true;
@@ -17,10 +16,10 @@ export default async ( msg: extendedMessage ) => {
 
     // If the track number exists play that one else play a random track
     const commandNumber = Math.abs( parseInt( numbers[0] ) );
-    const trackNo = commandNumber < soundTracks[msg.command].count ?
+    const trackNo = commandNumber < Storage.trackCount[msg.command] ?
         commandNumber :
-        Math.floor( Math.random() * soundTracks[msg.command].count );
-    const audioPath = relPathTo( `assets/soundTracks/${msg.command}Tracks/${msg.command}${trackNo}.mp3` );
-    playSound( audioPath, voiceChan );
+        Math.floor( Math.random() * Storage.trackCount[msg.command] );
+    const audioStream = await Storage.getTrack(msg.command, trackNo);
+    playAudioStream(audioStream, voiceChan);
     return true;
 };

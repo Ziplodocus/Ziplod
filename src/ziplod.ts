@@ -1,13 +1,11 @@
 // Importing modules
 import { Client, Intents } from "discord.js";
-import { token, textToSpeechAuth } from "./data/config.js";
+import { token, ttsAuth } from "./data/config.js";
 import { establishEvents } from "./events/events.js";
-import { soundTracksUpdater } from "./cron-jobs/soundTracks.js";
-import fetch from 'node-fetch';
-import fs from 'fs';
+import ZiplodStorage from './classes/Storage.js';
 
 // Defining root directory of project
-export const rootDir = new URL( '.', import.meta.url ).pathname.replace( '/', '' );
+export const ROOT_DIR = new URL( '.', import.meta.url ).pathname.replace( '/', '' );
 // Defining constants
 const intents = {
 	intents: [
@@ -16,15 +14,17 @@ const intents = {
 		Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
 		Intents.FLAGS.GUILD_PRESENCES,
 		Intents.FLAGS.GUILD_MEMBERS,
-		Intents.FLAGS.GUILD_MESSAGES
+		Intents.FLAGS.GUILD_MESSAGES,
 	]
 };
 
 export const client = new Client( intents );
+export const Storage = new ZiplodStorage();
+
 
 console.log( "Launching Ziplod..." );
 
 establishEvents();
-soundTracksUpdater();
+Storage.updateTrackCount();
 
 client.login( token );

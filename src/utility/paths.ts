@@ -1,5 +1,5 @@
 
-import { rootDir } from "../ziplod.js";
+import { ROOT_DIR } from "../ziplod.js";
 import { readdirSync } from "fs";
 import { join as joinPath, relative as relativePath } from "path";
 
@@ -8,7 +8,7 @@ import { join as joinPath, relative as relativePath } from "path";
 //      FUNCTIONS      //
 /////////////////////////
 
-export function pathTo( to: string, from = rootDir ) {
+export function pathTo( to: string, from = ROOT_DIR ) {
 	return joinPath( from, to );
 }
 export function relPathTo( to: string ) {

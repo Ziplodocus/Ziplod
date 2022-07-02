@@ -1,8 +1,8 @@
 import { GuildMemberRoleManager, MessageActionRow, MessageButton } from "discord.js";
-import extendedMessage from "../../../../classes/extendedMessage.js";
+import ExtendedMessage from "../../../../classes/ExtendedMessage.js";
 import checkPermissions from "../../../../utility/checkPermissions.js";
 
-export default async ( msg: extendedMessage ) => {
+export default async ( msg: ExtendedMessage ) => {
     if ( !checkPermissions( msg ) ) return;
     const argRole = msg.args.join( " " ) || "Custom Gamer";
     const roles = await msg.message.guild?.roles.fetch( undefined, { cache: true } );
