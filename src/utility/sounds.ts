@@ -3,7 +3,7 @@ import {
 	createAudioPlayer,
 	createAudioResource
 } from "@discordjs/voice";
-import { existsSync, ReadStream } from "fs";
+import { ReadStream } from "fs";
 import { Channel, VoiceChannel, VoiceState } from "discord.js";
 import { Readable } from 'stream';
 import { langTags, ttsAuth } from "../data/config.js";

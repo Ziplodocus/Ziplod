@@ -1,6 +1,4 @@
-import { VoiceChannel, VoiceState } from 'discord.js';
-import { playRandomMeme } from '../../../utility/sounds.js';
-import { randomTime } from '../../../utility/other.js';
+import { VoiceState } from 'discord.js';
 import {IntervalMeme} from '../../../classes/IntervalMeme.js';
 
 export function handleBot( oldState: VoiceState, newState: VoiceState ) {
@@ -11,16 +9,18 @@ export function handleBot( oldState: VoiceState, newState: VoiceState ) {
     const guildId = newState.guild.id;
     let interval = IntervalMeme[guildId];
 
+
     const isJoiningNewChannel = !!newChan && ( newChan !== oldChan ) && !oldChan;
     const isLeavingChannel = !newChan && !!oldChan;
     const isChangingChannel = ( newChan && oldChan ) && ( oldChan === newChan );
     const isNewChanVoice = ( newChan?.type === "GUILD_VOICE" );
     const isOldChanVoice = ( oldChan?.type === "GUILD_VOICE" );
+    const isBothChansVoice = isNewChanVoice && isOldChanVoice;
     // console.log(!newChan, !!oldChan, isLeavingChannel);
 
-    if ( isJoiningNewChannel && ( newChan.type === "GUILD_VOICE" ) ) new IntervalMeme( newChan );
-    else if ( isLeavingChannel && ( oldChan.type === "GUILD_VOICE" ) ) interval.destroy();
-    else if ( isChangingChannel ) interval.changeChannel(newChan);
+    if ( isJoiningNewChannel && isNewChanVoice ) new IntervalMeme( newChan );
+    else if ( isLeavingChannel && isOldChanVoice ) interval.destroy();
+    else if ( isChangingChannel && isBothChansVoice ) interval.changeChannel(newChan);
     // {
     //     if ( !isNewChanVoice && !isOldChanVoice ) return;
     //     else if ( isNewChanVoice && isOldChanVoice ) interval.changeChannel( newChan );
