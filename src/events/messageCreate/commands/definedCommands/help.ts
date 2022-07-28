@@ -1,10 +1,12 @@
 import ExtendedMessage from "../../../../classes/ExtendedMessage.js";
-import { playSound } from "../../../../utility/sounds.js";
+import { Storage } from "../../../../ziplod.js";
 
 export default async ( msg: ExtendedMessage ) => {
-    const voiceChan = msg.voiceChannel();
-    if ( !voiceChan )
-        return msg.message.reply( "\n Someone has to be in a voice channel don' they? idiot." );
-    playSound( `seinfeld.mp3`, voiceChan );
+    const tracks = Storage.trackCount;
+    let commands = "";
+    for (const com of Object.keys(tracks)) {
+        commands += `\n ✸ ${com} : ${tracks[com]-1}`;
+    };
+    msg.message.channel.send(`The following tracks are available:${commands}`);
     return msg;
 };
