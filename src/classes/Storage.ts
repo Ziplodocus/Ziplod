@@ -1,4 +1,5 @@
 import {Bucket, Storage} from '@google-cloud/storage';
+import {Readable} from 'stream';
 
 // Must have a Google cloud service account key and an env variable
 // named GOOGLE_APPLICATION_CREDENTIALS set as the path pointing to the json key.
@@ -15,7 +16,7 @@ export default class ZiplodStorage {
     }
 
     // Returns the given users given intro/outro theme mp3 file as a stream
-    async getTheme(user:string, themeType : string) {
+    async getTheme(user:string, themeType : string) : Promise<Readable | undefined> {
         console.log( `Getting ${user}'s ${themeType}...`);
         const path = `soundTracks/themeSongs/${user}/${themeType}`;
         // Doesn't track number of themes so will need to see all availble to determine which one to fetch.
@@ -25,14 +26,14 @@ export default class ZiplodStorage {
     }
 
     // Returns a read stream to the named mp3 file in the sounds folder
-    async getSound(name:string) {
+    async getSound(name:string) : Promise<Readable | undefined> {
         console.log( `Getting sound ${name}...`);
         const path = `sounds/${name}.mp3`;
         return this.bucket.file(path).createReadStream();
     }
 
     // Returns readstream of mp3 file given by the requested track type and number
-    async getTrack(type : string, number : number) {
+    async getTrack(type : string, number : number) : Promise<Readable | undefined>{
         console.log(`Getting track ${type}${number}...`);
         const path = `soundTracks/${type}Tracks/${type}${number}.mp3`;
         return this.bucket.file(path).createReadStream();

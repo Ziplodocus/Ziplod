@@ -4,9 +4,9 @@ import {
 	createAudioResource
 } from "@discordjs/voice";
 import { ReadStream } from "fs";
-import { Channel, VoiceChannel, VoiceState } from "discord.js";
+import { VoiceChannel, VoiceState } from "discord.js";
 import { Readable } from 'stream';
-import { langTags, ttsAuth } from "../data/config.js";
+import { langTags, ThemeTro, ttsAuth } from "../data/config.js";
 import { Storage } from '../ziplod.js';
 import fetch from 'node-fetch';
 
@@ -18,7 +18,12 @@ import fetch from 'node-fetch';
 export async function playSound( name : string, channel: VoiceChannel ) {
 	console.log('Attempting to play sound: ' + name + ' in channel: ' + channel.name);
 	const soundStream = await Storage.getSound(name);
+    if (!soundStream) {
+        console.log('Failed to retrieve sound ' + name);
+        return false;
+    }
 	playAudioStream(soundStream, channel);
+    return true;
 }
 
 export async function playAudioStream(stream : string | ReadStream | Readable, channel : VoiceChannel) {
@@ -36,14 +41,13 @@ export async function playAudioStream(stream : string | ReadStream | Readable, c
 
 export async function speak(text: string, voiceChan : VoiceChannel) {
     const stream = await fetchAudioStreamFromString(text);
-    if(stream) {
-        playAudioStream(stream, voiceChan);
-        console.log('Saying '+text+' in channel: '+voiceChan.name);
-        return true;
-    } else {
+    if(!stream) {
         console.log('Speaking failed :o');
         return false;
     }
+    playAudioStream(stream, voiceChan);
+    console.log('Saying '+text+' in channel: '+voiceChan.name);
+    return true;
 }
 
 // Returns a readable Audiostream, from text, by calling the Google TTS api.
@@ -81,23 +85,32 @@ export async function fetchAudioStreamFromString(string: string) : Promise<Reada
 }
 
 //Determines and plays the theme music ( if any ) of a user
-export async function playTheme( state: VoiceState, themeType: string ) {
-	if ( state?.channel?.type !== "GUILD_VOICE" ) return;
+export async function playTheme( state: VoiceState, themeType: string ) : Promise<boolean> {
+	if ( state?.channel?.type !== "GUILD_VOICE" ) return false;
 	const dude = state?.member?.user?.tag;
     if (!dude) return false;
 	const voiceChan = state.channel;
     const themeStream = await Storage.getTheme(dude, themeType);
+    if(!themeStream) {
+        console.log(`Failed to retrieve ${dude}'s ${ThemeTro}ro music or does not exist`);
+        return false;
+    }
 	console.log( `Playing ${dude}'s ${themeType}ro music` );
 	playAudioStream( themeStream, voiceChan );
+    return true;
 }
 
 // Plays a random meme in the given voice channel
-export async function playRandomMeme( channel: Channel ) {
+export async function playRandomMeme( channel: VoiceChannel ) : Promise<boolean> {
 	// This ensures the channel is of type VoiceChannel
-	if ( channel.type !== "GUILD_VOICE" ) return;
+	if ( channel.type !== "GUILD_VOICE" ) return false;
 	const memeCount = Storage.trackCount.meme;
 	const rndInt = Math.floor( Math.random() * memeCount );
     const memeStream = await Storage.getTrack('meme', rndInt);
-	// @ts-ignore Typescript doens't seem to pick up that channel is type voiceChannel here.
+    if ( !memeStream ) {
+        console.log(`Failed to retrieve meme ${rndInt}`);
+        return false;
+    }
 	playAudioStream( memeStream, channel );
+    return true;
 }
