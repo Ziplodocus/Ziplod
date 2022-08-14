@@ -20,6 +20,10 @@ export default async ( msg: ExtendedMessage ) => {
         commandNumber :
         Math.floor( Math.random() * Storage.trackCount[msg.command] );
     const audioStream = await Storage.getTrack(msg.command, trackNo);
+    if(!audioStream) {
+        console.log('Failed to play ');
+        return false;
+    }
     playAudioStream(audioStream, voiceChan);
     return true;
 };
