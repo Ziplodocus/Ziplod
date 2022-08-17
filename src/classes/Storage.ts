@@ -11,7 +11,7 @@ export default class ZiplodStorage {
         const bucket = new Storage();
         this.bucket = bucket.bucket(bucketName);
         // Assign a track count with the purpose to avoid requesting tracks that don't exist
-        this.trackCount = {}
+        this.trackCount = {};
         this.updateTrackCount();
     }
 
@@ -22,6 +22,7 @@ export default class ZiplodStorage {
         // Doesn't track number of themes so will need to see all availble to determine which one to fetch.
         const themes = (await this.bucket.getFiles({prefix: path}))[0];
         const file = themes[Math.floor(Math.random() * themes.length)];
+        if (!file) return undefined;
         return file.createReadStream();
     }
 
