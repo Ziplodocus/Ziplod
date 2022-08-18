@@ -17,3 +17,8 @@ export function delCommands( channel: TextChannel, time = 11000 ) {
 export function randomTime() {
 	return 1000 * 60 * 5 + Math.random() * 1000 * 60 * 25;
 }
+
+// Escape a string for use in regex
+export function escapeRegExp(string : string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}

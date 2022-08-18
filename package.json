@@ -5,8 +5,8 @@
   "main": "ziplod.js",
   "type": "module",
   "scripts": {
-    "start": "tsc && node ziplod.js",
-    "driveTest": "tsc && node drivetest.js",
+    "prestart": "tsc",
+    "start": "node ziplod.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

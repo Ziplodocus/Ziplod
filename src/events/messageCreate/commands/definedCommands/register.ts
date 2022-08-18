@@ -9,12 +9,19 @@ export default async ( msg: ExtendedMessage ) => {
     if ( !attachment ) return msg.message.reply( 'Attach an mp3 dimwit.' );
     if ( attachment.size > 2000000 ) return msg.message.reply( 'File is larger than your mother, I will not take it.' );
     if ( attachment.contentType !== 'audio/mpeg' ) return msg.message.reply( 'I only take mp3s you dissident.' );
+
     try {
         const typeCount = Storage.trackCount[type] || 0;
         // fetch the file from the external URL
         const response = await fetch( attachment.url );
         // Add the track to google cloud storage
-        Storage.addTrack(type, typeCount, response.body);
+        if ( type === 'int' || type === 'out' ) {
+            console.log(attachment);
+            if (attachment.size > 347520) return msg.message.reply( 'No one wants to hear your life story. Keep it short and sweet.' );
+            await Storage.addTheme(msg.message.author.tag, type, response.body);
+            return true;
+        }
+        await Storage.addTrack(type, typeCount, response.body);
         return true;
     } catch ( error ) {
         console.log( error );
