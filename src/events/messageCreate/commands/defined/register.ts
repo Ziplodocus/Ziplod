@@ -1,6 +1,6 @@
 import ExtendedMessage from "../../../../classes/ExtendedMessage";
 import fetch from "node-fetch";
-import { Storage } from "../../../../ziplod.js";
+import { Themes, Tracks } from "../../../../ziplod.js";
 import { basename } from "path";
 
 export default async (msg: ExtendedMessage) => {
@@ -28,13 +28,14 @@ export default async (msg: ExtendedMessage) => {
           "No one wants to hear your life story. Keep it short and sweet.",
         );
       }
-      const res = await Storage.addTheme(
+      const res = await Themes.add(
         msg.message.author.tag,
         type,
         response.body,
       );
-      if (res instanceof Error) msg.message.reply(res.message);
-      else {
+      if (res instanceof Error) {
+        msg.message.reply("Unsuccessfully registered theme...");
+      } else {
         msg.message.reply(
           `Succesfully registered theme as ${basename(res.name, ".mp3")}`,
         );
@@ -42,7 +43,7 @@ export default async (msg: ExtendedMessage) => {
       return;
     }
 
-    const res = await Storage.addTrack(type, response.body);
+    const res = await Tracks.add(type, response.body);
     if (res instanceof Error) msg.message.reply(res.message);
     else {
       msg.message.reply(

@@ -1,7 +1,7 @@
 import { EventWhen } from "../events.js";
 import { Client, Message } from "discord.js";
 import ExtendedMessage from "../../classes/ExtendedMessage.js";
-import { Storage } from "../../ziplod.js";
+import { Storage, Tracks } from "../../ziplod.js";
 import playTrack from "./commands/playTrack.js";
 
 export const type: keyof Client = EventWhen.on;
@@ -21,6 +21,6 @@ export async function messageCreate(message: Message) {
     return command(extMsg);
   } catch (e) {
   }
-  if (Storage.trackCount[extMsg.command]) return playTrack(extMsg);
+  if (Tracks.count[extMsg.command]) return playTrack(extMsg);
   message.reply("\n That is not one of my many powerful commands tiny person");
 }
