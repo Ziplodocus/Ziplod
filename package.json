@@ -5,8 +5,11 @@
   "main": "ziplod.js",
   "type": "module",
   "scripts": {
-    "prestart": "tsc",
-    "start": "node ziplod.js",
+    "watch-ts" : "tsc -watch",
+    "watch-app": "nodemon ziplod.js",
+    "start": "concurrently \"npm:watch-ts\" \"npm:watch-app\"",
+    "prebuild": "tsc",
+    "build": "node ziplod.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,12 +29,12 @@
     "@discordjs/rest": "^0.1.0-canary.0",
     "@discordjs/voice": "^0.6.0",
     "@google-cloud/storage": "^6.2.2",
-    "discord-api-types": "^0.23.1",
     "discord.js": "^13.1.0",
     "ffmpeg-static": "^4.4.0",
     "libsodium-wrappers": "^0.7.9"
   },
   "devDependencies": {
-    "@types/ffmpeg-static": "^3.0.1"
+    "@types/ffmpeg-static": "^3.0.1",
+    "discord-api-types": "^0.37.3"
   }
 }
