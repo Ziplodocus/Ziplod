@@ -24,11 +24,10 @@ function handleBot(oldState: VoiceState, newState: VoiceState) {
   const newChan = newState.channel;
   const oldChan = oldState.channel;
   if (oldChan === newChan) return;
-  console.log(newChan?.name, oldChan?.name);
 
   const isNewChanVoice = (newChan && newChan.type === "GUILD_VOICE");
   const isOldChanVoice = (oldChan && oldChan.type === "GUILD_VOICE");
 
-  if (isOldChanVoice) IntervalMeme[oldState.guild.id].destroy();
+  if (isOldChanVoice) IntervalMeme[oldState.guild.id]?.destroy();
   if (isNewChanVoice) new IntervalMeme(newChan);
 }

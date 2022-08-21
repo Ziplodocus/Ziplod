@@ -30,3 +30,14 @@ export function getDirs(dirPath: string) {
     .filter((dirent) => dirent.isDirectory())
     .map((dirent) => dirent.name);
 }
+
+export function randItem<T>(set: Set<T>) {
+  const i = Math.floor(Math.random() * set.size);
+  let j = 0;
+  for (const item of set) {
+    if (j === i) {
+      return item;
+    }
+    j++;
+  }
+}

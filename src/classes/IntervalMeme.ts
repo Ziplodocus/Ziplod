@@ -11,7 +11,6 @@ export class IntervalMeme {
     IntervalMeme[channel.guild.id] = this;
     this.channel = channel;
     this.refresh();
-    console.log(`Set meme interval in channel "${this.channel.name}"`);
   }
 
   destroy() {

@@ -1,12 +1,12 @@
 import { EventWhen } from "../events.js";
 import { Client, Message } from "discord.js";
 import ExtendedMessage from "../../classes/ExtendedMessage.js";
-import { Storage, Tracks } from "../../ziplod.js";
+import { Tracks } from "../../ziplod.js";
 import playTrack from "./commands/playTrack.js";
 
 export const type: keyof Client = EventWhen.on;
 
-export async function messageCreate(message: Message) {
+export async function messageCreate(message: Message): Promise<void> {
   // Extends the message object with the handlers and other utility methods
   const extMsg = new ExtendedMessage(message);
 

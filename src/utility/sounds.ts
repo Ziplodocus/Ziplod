@@ -7,52 +7,55 @@ import { ReadStream } from "fs";
 import { VoiceChannel, VoiceState } from "discord.js";
 import { Readable } from "stream";
 import { langTags, ttsAuth } from "../data/config.js";
-import { Storage, Themes, Tracks } from "../ziplod.js";
+import { Files, Themes, Tracks } from "../ziplod.js";
 import fetch from "node-fetch";
-import { basename } from "path";
-
-/////////////////////////
-//      FUNCTIONS      //
-/////////////////////////
+import { randItem } from "./other.js";
 
 // Plays in the given channel the audio file at the given file path
 export async function playSound(name: string, channel: VoiceChannel) {
-  console.log(
-    `Getting "${name}"...`,
-  );
-  const soundStream = await Storage.get(`sounds/${name}.mp3`);
-  if (soundStream instanceof Error) {
-    console.error(soundStream.message);
-    return soundStream;
-  }
-  const success = await playAudioStream(soundStream, channel);
-  if (success === true) {
+  const soundStream = await Files.get(`sounds/${name}.mp3`);
+  if (soundStream instanceof Error) return soundStream;
+
+  const isSuccess = await playAudioStream(soundStream, channel);
+  if (isSuccess === true) {
     console.log(`Playing "${name}" in channel "${channel.name}"`);
   }
-  return success;
+
+  return isSuccess;
 }
 
 //Determines and plays the theme music ( if any ) of a user
 export async function playTheme(
   state: VoiceState,
   type: "intro" | "outro",
-): Promise<true | Error> {
+  name?: string,
+) {
   if (state?.channel?.type !== "GUILD_VOICE") {
     return new Error("Channel is not of type VoiceChannel");
   }
-  const dude = state?.member?.user.tag;
-  if (!dude) {
+
+  const tag = state?.member?.user.tag;
+  if (!tag) {
     return new Error(`This voice state has no guild member associated 🤔`);
   }
+  const themes = await Themes.themes(tag, type);
+  if (name && !themes.has(name)) {
+    return new Error(`Theme ${name} doesn't exist!`);
+  }
 
-  const getResult = await Themes.get(dude, type);
+  const themeToPlay = name || randItem(themes);
+  if (!themeToPlay) return Error(`${tag} has no ${type} themes`);
+
+  const getResult = await Themes.get(themeToPlay, type, tag);
   if (getResult instanceof Error) {
     return getResult;
   }
 
   const playResult = await playAudioStream(getResult, state.channel);
   if (playResult === true) {
-    console.log(`Playing ${dude}'s ${basename(type, ".mp3")} music`);
+    console.log(
+      `Playing ${tag}'s ${type} music ${themeToPlay} in ${state.channel.guild.name}/${state.channel.name}`,
+    );
   }
   return playResult;
 }
@@ -69,15 +72,15 @@ export async function playTrack(
 
   const playResult = await playAudioStream(getResult, channel);
   if (playResult === true) {
-    console.log(`Playing track "${type}${num}" in channel "${channel.name}"`);
+    console.log(
+      `Playing tracks/${type}/${num} in ${channel.guild.name}/${channel.name}`,
+    );
   }
   return playResult;
 }
 
 // Plays a random meme in the given voice channel
-export async function playRandomMeme(
-  channel: VoiceChannel,
-): Promise<true | Error> {
+export async function playRandomMeme(channel: VoiceChannel) {
   // This ensures the channel is of type VoiceChannel
   if (channel.type !== "GUILD_VOICE") {
     return new Error("Channel is not of type VoiceChannel");
@@ -89,10 +92,8 @@ export async function playRandomMeme(
 
 export async function speak(text: string, voiceChan: VoiceChannel) {
   const stream = await audioStreamFromString(text);
-  if (stream instanceof Error) {
-    console.error(stream.message);
-    return false;
-  }
+  if (stream instanceof Error) return stream;
+
   const isSuccess = await playAudioStream(stream, voiceChan);
   if (isSuccess === true) {
     console.log(`Saying "${text}" in channel ${voiceChan.name}`);
@@ -117,7 +118,7 @@ async function playAudioStream(
     player.play(resource);
     return true;
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return new Error(
       `Something went wrong playing the stream in channel ${channel.name}`,
     );
@@ -136,35 +137,46 @@ function base64ToMP3(content: string) {
 async function audioStreamFromString(
   string: string,
 ) {
-  const response = await fetch(
-    `https://texttospeech.googleapis.com/v1/text:synthesize?key=${ttsAuth}`,
-    {
-      headers: {
-        "content-type": "application/json; charset=utf8",
+  try {
+    const response = await fetch(
+      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${ttsAuth}`,
+      {
+        headers: {
+          "content-type": "application/json; charset=utf8",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          input: {
+            text: string,
+          },
+          voice: {
+            languageCode:
+              (langTags[Math.round(Math.random() * langTags.length)]),
+            ssmlGender: (Math.random() > 0.5) ? "MALE" : "FEMALE",
+          },
+          audioConfig: {
+            audioEncoding: "MP3",
+          },
+        }),
       },
-      method: "POST",
-      body: JSON.stringify({
-        input: {
-          text: string,
-        },
-        voice: {
-          languageCode: (langTags[Math.round(Math.random() * langTags.length)]),
-          ssmlGender: (Math.random() > 0.5) ? "MALE" : "FEMALE",
-        },
-        audioConfig: {
-          audioEncoding: "MP3",
-        },
-      }),
-    },
-  );
+    );
 
-  const { audioContent } = await response.json();
+    const { audioContent } = await response.json();
 
-  if (response.status !== 200) {
+    if (response.status !== 200) {
+      console.error(
+        "Text to speech error!: " + response.status + " " + response.statusText,
+      );
+      return new Error(
+        "Text to speech error!: " + response.status + " " + response.statusText,
+      );
+    }
+    // decode base64 as mp3
+    return base64ToMP3(audioContent);
+  } catch (err) {
+    console.error(err);
     return new Error(
-      "Text to speech error!: " + response.status + " " + response.statusText,
+      "Text to speech error!",
     );
   }
-  // decode base64 as mp3
-  return base64ToMP3(audioContent);
 }

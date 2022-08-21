@@ -23,18 +23,25 @@ export default async (msg: ExtendedMessage) => {
 
     // Add the track to google cloud storage
     if (type === "intro" || type === "outro") {
+      const name = msg.args[1];
+      if (!name) {
+        return msg.message.reply(
+          "Your theme song needs a (one word) name! I recommend 'moron'.",
+        );
+      }
       if (attachment.size > 347520) {
         return msg.message.reply(
           "No one wants to hear your life story. Keep it short and sweet.",
         );
       }
       const res = await Themes.add(
-        msg.message.author.tag,
+        name,
         type,
+        msg.message.author.tag,
         response.body,
       );
       if (res instanceof Error) {
-        msg.message.reply("Unsuccessfully registered theme...");
+        msg.message.reply(`Unsuccessfully registered ${name}...`);
       } else {
         msg.message.reply(
           `Succesfully registered theme as ${basename(res.name, ".mp3")}`,
@@ -52,6 +59,7 @@ export default async (msg: ExtendedMessage) => {
     }
     return;
   } catch (error) {
+    console.error(error);
     msg.message.channel.send(
       "Something has gone wrong... Totally not my fault though.",
     );

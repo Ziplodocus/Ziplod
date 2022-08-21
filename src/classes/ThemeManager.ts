@@ -1,89 +1,102 @@
 import { escapeRegExp } from "../utility/other.js";
-import GoogleStorage from "./Storage.js";
+import { AssetManager, FileManager } from "./FileManager.js";
+import { basename } from "path";
+import { File } from "@google-cloud/storage";
 
-export default class ThemeManager {
-  storage: GoogleStorage;
-  count: Record<string, Record<"intro" | "outro", number>>;
+export class ThemeManager implements AssetManager {
+  storage: FileManager;
+  cache: Record<string, Record<"intro" | "outro", Set<string>>>;
 
-  constructor(storage: GoogleStorage) {
+  constructor(storage: FileManager) {
     this.storage = storage;
-    this.count = {};
+    this.cache = {};
   }
 
-  async get(tag: string, type: "intro" | "outro", num?: number) {
-    const count = await this.getCount(tag);
+  async get(name: string, type: "intro" | "outro", tag: string) {
+    const exists = (await this.themes(tag, type)).has(name);
 
-    if (count[type] === 0) {
+    if (!exists) {
       console.error(`${tag} has no ${type}`);
       return new Error(`${tag} has no ${type}`);
     }
 
-    const themeNumber = (num && num < count[type])
-      ? num
-      : Math.floor(Math.random() * count[type]);
-
-    console.log(`Getting ${tag}'s ${type}-${themeNumber}...`);
-    const getResult = this.storage.get(
-      `soundTracks/themeSongs/${tag}/${type}-${themeNumber}.mp3`,
-    );
-    if (getResult instanceof Error) {
-      console.error(
-        `Failed to retrieve ${tag}'s ${type} music : ${getResult.message}`,
-      );
-    }
-    return getResult;
+    return this.storage.get(`themes/${tag}/${type}/${name}.mp3`);
   }
 
   // Uploads a stream to storage bucket in the trackType subfolder in soundtracks
   async add(
-    tag: string,
+    name: string,
     type: "intro" | "outro",
+    tag: string,
     stream: NodeJS.ReadableStream,
   ) {
-    // Get current count of user's themes
-    const count = await this.getCount(tag);
-    const num = count[type];
+    // Get current cache of user's themes
+    const userThemeSongs = await this.themes(tag, type);
+    if (userThemeSongs.has(name)) {
+      return new Error(`${type} ${name} already exists you gibbon.`);
+    }
 
-    console.log(`Attempting to register ${type}-${num}...`);
+    // Add the theme if it doesn't already exist
     const file = await this.storage.add(
-      `soundTracks/themeSongs/${tag}/${type}-${num}.mp3`,
+      `themes/${tag}/${type}/${name}.mp3`,
       stream,
     );
 
-    // Increment the count so next time it does not need to be checked again
-    if (file instanceof File) this.count[tag][type]++;
+    // Increment the cache so next time it does not need to be checked again
+    if (file instanceof File) userThemeSongs.add(name);
 
     return file;
   }
 
-  // Looks at all the files in the soundTracks bucket,
-  // and updates the count property based on the files there.
-  async updateCount(tag: string): Promise<Record<string, number>> {
-    // Fetch details on all user themes
-    const allFiles = await this.storage.getAll(`soundTracks/themeSongs/${tag}`);
+  // Remove a given theme if it exists
+  async remove(name: string, type: "intro" | "outro", tag: string) {
+    const userThemesongs = await this.themes(tag, type);
+    if (!userThemesongs.has(name)) {
+      console.error();
+      return new Error();
+    }
 
-    // Initialise count for each theme type at 0
-    const tempCount: Record<string, number> = {
-      intro: 0,
-      outro: 0,
+    const removeResult = await this.storage.remove(
+      `themes/${tag}/${type}/${name}.mp3`,
+    );
+
+    if (removeResult === true) userThemesongs.delete(name);
+
+    return removeResult;
+  }
+
+  async themes(tag: string, type: "intro" | "outro") {
+    return this.cache?.[tag]?.[type] || (await this.updateCache(tag))[type];
+  }
+
+  // Looks at all the user's themes in the bucket,
+  // and updates the cache property based on the files there.
+  async updateCache(tag: string) {
+    // Fetch details on all user themes
+    const allFiles = await this.storage.getAll(`themes/${tag}`);
+
+    // Initialise cache for each theme type at 0
+    const tempCache: Record<string, Set<string>> = {
+      intro: new Set(),
+      outro: new Set(),
     };
 
-    // Increment counter for each theme of that type
+    // Increment cacheer for each theme of that type
     allFiles.forEach((file) => {
-      const type = new RegExp(`(?<=${escapeRegExp(tag)}/).*?(?=-)`).exec(
+      // Check whether intro or outro
+      const type = new RegExp(`(?<=${escapeRegExp(tag)}/).*?(?=/)`).exec(
         file.name,
       );
       if (type === null) return;
-      tempCount[type[0]]++;
+      // Get file name
+      const name = basename(file.name, ".mp3");
+      if (name === null) return console.error("Something wrong");
+      // Add file to the cache
+      tempCache[type[0]].add(name);
     });
 
-    // Track the count on the instance
-    this.count[tag] = tempCount;
-    return this.count[tag];
+    // Track the cache on the instance
+    this.cache[tag] = tempCache;
+    return tempCache;
   }
-
-  getCount = async (tag: string) => {
-    return this.count?.[tag] ||
-      await this.updateCount(tag);
-  };
 }

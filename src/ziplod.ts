@@ -2,9 +2,10 @@
 import { Client, Intents } from "discord.js";
 import { token } from "./data/config.js";
 import { setUpEvents } from "./events/events.js";
-import GoogleStorage from "./classes/Storage.js";
-import TrackManager from "./classes/TrackManager.js";
-import ThemeManager from "./classes/ThemeManager.js";
+import { FileManager } from "./classes/FileManager.js";
+import { TrackManager } from "./classes/TrackManager.js";
+import { ThemeManager } from "./classes/ThemeManager.js";
+import { Storage } from "@google-cloud/storage";
 
 // Defining intents
 const intents = {
@@ -18,9 +19,13 @@ const intents = {
   ],
 };
 export const client = new Client(intents);
-export const Storage = new GoogleStorage("ziplod-assets");
-export const Tracks = new TrackManager(Storage);
-export const Themes = new ThemeManager(Storage);
+
+export const GoogleStorage = new Storage();
+
+export const Files = new FileManager(GoogleStorage.bucket("ziplod-assets"));
+
+export const Tracks = new TrackManager(Files);
+export const Themes = new ThemeManager(Files);
 
 console.log("Launching Ziplod...");
 
