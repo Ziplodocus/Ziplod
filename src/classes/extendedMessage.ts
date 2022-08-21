@@ -6,7 +6,6 @@ export default class {
   args: string[];
   isCommand: boolean;
   message: Message;
-  respond: Message["reply"];
   _voiceChannel: VoiceChannel | undefined;
   constructor(message: Message) {
     this.message = message;
@@ -15,7 +14,6 @@ export default class {
       prefix.length + this.command.length + 1,
     ).split(" ");
     this.isCommand = message.content.startsWith(prefix);
-    this.respond = message.reply;
   }
   get voiceChannel() {
     if (this._voiceChannel) return this._voiceChannel;

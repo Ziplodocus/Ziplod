@@ -14,7 +14,7 @@ export default async (msg: ExtendedMessage) => {
   });
   const therole = roles?.find((role) => role.name === argRole);
   if (!therole) {
-    return msg.respond("You have to pick a role that exists dummy.");
+    return msg.message.reply("You have to pick a role that exists dummy.");
   }
 
   const button1 = new MessageButton({

@@ -5,7 +5,7 @@ import { Tracks } from "../../../ziplod.js";
 export default async (msg: ExtendedMessage): Promise<void> => {
   const voiceChan = msg.voiceChannel;
   if (!voiceChan) {
-    msg.respond(
+    msg.message.reply(
       "\n Someone has to be in a voice channel, don't they? idiot.",
     );
     return;
@@ -23,7 +23,7 @@ export default async (msg: ExtendedMessage): Promise<void> => {
 
   const result = await playTrack(msg.command, trackNo, voiceChan);
 
-  if (result instanceof Error) msg.respond(result.message);
+  if (result instanceof Error) msg.message.reply(result.message);
 
   return;
 };

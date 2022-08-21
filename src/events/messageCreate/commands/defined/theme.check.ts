@@ -14,6 +14,6 @@ export default async (msg: ExtendedMessage) => {
     reply += `\n\t- ${theme}`;
   }
 
-  msg.respond(reply);
+  msg.message.reply(reply);
   return msg;
 };

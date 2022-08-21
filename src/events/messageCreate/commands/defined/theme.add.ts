@@ -10,21 +10,21 @@ export default async (msg: ExtendedMessage) => {
 
   // Validation of user inputs
   if (type !== "intro" && type !== "outro") {
-    return msg.respond(
+    return msg.message.reply(
       "Register as what you neanderthal? intro or outro?",
     );
   }
-  if (!attachment) return msg.respond("Attach an mp3 dimwit.");
+  if (!attachment) return msg.message.reply("Attach an mp3 dimwit.");
   if (!name) {
-    return msg.respond(
+    return msg.message.reply(
       "Your theme song needs a (one word) name! I recommend 'moron'.",
     );
   }
   if (attachment.contentType !== "audio/mpeg") {
-    return msg.respond("I only take mp3s you dissident.");
+    return msg.message.reply("I only take mp3s you dissident.");
   }
   if (attachment.size > 347520) {
-    return msg.respond(
+    return msg.message.reply(
       "No one wants to hear your life story. Keep it short and sweet.",
     );
   }
@@ -39,9 +39,9 @@ export default async (msg: ExtendedMessage) => {
   );
   // Handle user message based on success or error
   if (res instanceof Error) {
-    msg.respond(`Unsuccessfully registered ${name}...`);
+    msg.message.reply(`Unsuccessfully registered ${name}...`);
   } else {
-    msg.respond(
+    msg.message.reply(
       `Succesfully registered theme as ${basename(res.name, ".mp3")}`,
     );
   }

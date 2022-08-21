@@ -6,15 +6,15 @@ export default async (msg: ExtendedMessage) => {
 
   const type = msg.args[0];
   if (type !== "intro" && type !== "outro") {
-    return msg.respond(
+    return msg.message.reply(
       `${type} is an invalid type of theme music you absolute buffoon. Try intro or outro...`,
     );
   }
   const name = msg.args[1];
   const removeResult = Themes.remove(name, type, tag);
   if (removeResult instanceof Error) {
-    msg.respond(removeResult.message);
+    msg.message.reply(removeResult.message);
   } else {
-    msg.respond(`Succesfully removed ${type} theme ${name}`);
+    msg.message.reply(`Succesfully removed ${type} theme ${name}`);
   }
 };
