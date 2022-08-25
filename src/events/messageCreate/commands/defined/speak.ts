@@ -3,6 +3,7 @@ import { speak } from "../../../../utility/sounds.js";
 
 export default async function (msg: ExtendedMessage): Promise<void> {
   const voiceChan = msg.voiceChannel;
+  console.log(voiceChan);
 
   // User input validation
   if (!voiceChan) {

@@ -31,12 +31,16 @@ export async function playTheme(
   name?: string,
 ) {
   if (state?.channel?.type !== "GUILD_VOICE") {
-    return new Error("Channel is not of type VoiceChannel");
+    console.error("Channel is not of type VoiceChannel");
+    return new Error(
+      "You can only play your theme in a voice channel you're in dumb dumb.",
+    );
   }
 
   const tag = state?.member?.user.tag;
   if (!tag) {
-    return new Error(`This voice state has no guild member associated 🤔`);
+    console.error(`This voice state has no guild member associated 🤔`);
+    return new Error(`Who are you? 🤔`);
   }
   const themes = await Themes.themes(tag, type);
   if (name && !themes.has(name)) {
@@ -44,7 +48,7 @@ export async function playTheme(
   }
 
   const themeToPlay = name || randItem(themes);
-  if (!themeToPlay) return Error(`${tag} has no ${type} themes`);
+  if (!themeToPlay) return Error(`You have no ${type} themes`);
 
   const getResult = await Themes.get(themeToPlay, type, tag);
   if (getResult instanceof Error) {
@@ -83,6 +87,9 @@ export async function playTrack(
 export async function playRandomMeme(channel: VoiceChannel) {
   // This ensures the channel is of type VoiceChannel
   if (channel.type !== "GUILD_VOICE") {
+    console.error(
+      `Can't play random meme in channel ${channel.name} as it's a ${channel.type}`,
+    );
     return new Error("Channel is not of type VoiceChannel");
   }
   const memeCount = Tracks.count.meme;
@@ -120,7 +127,7 @@ async function playAudioStream(
   } catch (err) {
     console.error(err);
     return new Error(
-      `Something went wrong playing the stream in channel ${channel.name}`,
+      `Something went wrong streaming the audio to channel ${channel.name} 🤔`,
     );
   }
 }
