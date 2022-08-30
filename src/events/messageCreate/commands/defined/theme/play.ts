@@ -1,5 +1,5 @@
-import ExtendedMessage from "../../../../classes/ExtendedMessage.js";
-import { playTheme } from "../../../../utility/sounds.js";
+import ExtendedMessage from "../../../../../classes/ExtendedMessage.js";
+import { playTheme } from "../../../../../utility/sounds.js";
 
 export default async (msg: ExtendedMessage): Promise<void> => {
   const voiceState = msg.message.member?.voice;

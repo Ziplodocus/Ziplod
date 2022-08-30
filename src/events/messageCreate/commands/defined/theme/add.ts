@@ -1,5 +1,5 @@
-import ExtendedMessage from "../../../../classes/ExtendedMessage.js";
-import { Themes } from "../../../../ziplod.js";
+import ExtendedMessage from "../../../../../classes/ExtendedMessage.js";
+import { Themes } from "../../../../../ziplod.js";
 import { basename } from "path";
 import fetch from "node-fetch";
 

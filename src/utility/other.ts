@@ -1,7 +1,8 @@
-import { readdirSync } from "fs";
+import { readdir, readdirSync } from "fs";
 import { prefix } from "../data/config.js";
 import { client } from "../ziplod.js";
 import { TextChannel } from "discord.js";
+import { basename } from "path";
 
 // Deletes commands the last 50 commands in the given text channel
 export function delCommands(channel: TextChannel, time = 11000) {
@@ -40,4 +41,20 @@ export function randItem<T>(set: Set<T>) {
     }
     j++;
   }
+}
+
+export function getDefinedCommandNames(entryPath: string) {
+  let files: string[] = [];
+
+  const readDir = (path: string, prefix: string = "") => {
+    const entries = readdirSync(path, { withFileTypes: true });
+    entries.forEach((entry) => {
+      const comm = basename(entry.name, ".js");
+      if (!entry.isDirectory()) return files.push(prefix + comm);
+      readDir(path + entry.name + "/", comm + "/");
+    });
+  };
+  readDir(entryPath);
+
+  return files;
 }

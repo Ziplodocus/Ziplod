@@ -1,5 +1,5 @@
-import ExtendedMessage from "../../../../classes/ExtendedMessage.js";
-import { Themes } from "../../../../ziplod.js";
+import ExtendedMessage from "../../../../../classes/ExtendedMessage.js";
+import { Themes } from "../../../../../ziplod.js";
 
 export default async (msg: ExtendedMessage) => {
   const intros = await Themes.themes(msg.message.author.tag, "intro");
