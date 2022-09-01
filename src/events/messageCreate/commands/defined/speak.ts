@@ -3,7 +3,6 @@ import { speak } from "../../../../utility/sounds.js";
 
 export default async function (msg: ExtendedMessage): Promise<void> {
   const voiceChan = msg.voiceChannel;
-  console.log(voiceChan);
 
   // User input validation
   if (!voiceChan) {
@@ -19,7 +18,6 @@ export default async function (msg: ExtendedMessage): Promise<void> {
   const stringToSpeak = msg.args.filter((arg) => !arg.startsWith("<@")).join(
     " ",
   );
-  speak(stringToSpeak, voiceChan);
   const speakResponse = speak(stringToSpeak, voiceChan);
   if (speakResponse instanceof Error) {
     msg.message.reply(speakResponse.message);

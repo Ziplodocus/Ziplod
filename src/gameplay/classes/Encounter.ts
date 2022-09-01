@@ -1,7 +1,7 @@
 type EncounterData = {
   messages: {
     start: string;
-    succes: string;
+    success: string;
     failure: string;
   };
   difficulty: number;

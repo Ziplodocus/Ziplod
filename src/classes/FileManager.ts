@@ -71,6 +71,27 @@ export class FileManager implements AssetManager {
     return file;
   }
 
+  async update(path: string, stream : Readable) {
+    const isValid = this.isValid(path);
+    if (isValid instanceof Error) {
+      console.error(isValid);
+      return isValid;
+    }
+
+    const file = this.bucket.file(path);
+
+    const exists = (await file.exists())[0];
+    if (!exists) {
+      console.error("File doesn't exist to update");
+      return new Error("File doesn't exist to update");
+    }
+
+    console.log(`Updating ${file.name}...`);
+    stream.pipe(file.createWriteStream());
+    console.log(`Updating ${file.name}.`);
+    return file;
+  }
+
   async remove(path: string) {
     const isValid = this.isValid(path);
     if (isValid instanceof Error) {

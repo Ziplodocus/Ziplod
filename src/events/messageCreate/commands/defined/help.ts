@@ -8,7 +8,7 @@ export default async (msg: ExtendedMessage) => {
   );
   let commands = "";
   for (const key in Tracks.count) {
-    commands += `\n✸     ${key}`;
+    commands += `\n✸     ${key} - ${Tracks.count[key]}`;
   }
 
   msg.message.channel.send(

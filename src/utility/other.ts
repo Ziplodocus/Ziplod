@@ -3,6 +3,7 @@ import { prefix } from "../data/config.js";
 import { client } from "../ziplod.js";
 import { TextChannel } from "discord.js";
 import { basename } from "path";
+import {Readable} from "stream";
 
 // Deletes commands the last 50 commands in the given text channel
 export function delCommands(channel: TextChannel, time = 11000) {
@@ -57,4 +58,19 @@ export function getDefinedCommandNames(entryPath: string) {
   readDir(entryPath);
 
   return files;
+}
+
+export function stringToStream(str: string) {
+  const stream = new Readable();
+  stream.push(str);
+  stream.push(null);
+  return stream;
+}
+
+export async function streamToString(stream : Readable) {
+  const chunks = []
+  for await (let chunk of stream) {
+    chunks.push(chunk)
+  }
+  return Buffer.concat(chunks).toString();
 }
