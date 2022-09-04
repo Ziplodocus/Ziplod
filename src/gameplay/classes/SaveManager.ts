@@ -1,37 +1,37 @@
-import { AssetManager, FileManager } from "../../classes/FileManager";
-import { Encounter } from "./Encounter";
-import { Player } from "./Player";
-import { streamToString, stringToStream } from "../../utility/other";
+import { streamToString, stringToStream } from "../../utility/other.js";
+import { Files } from "../../ziplod.js";
+import { PlayerData } from "../types/index.js";
 
-type SaveData = {
-  player: Player;
-  encounter: Encounter;
-};
+export class SaveManager {
+  path: string;
+  constructor(usertag: string) {
+    this.path = `zumbor/saves/${usertag}.json`;
+  }
+  async get() {
+    return await Files.get(this.path);
+  }
+  async add(data: PlayerData) {
+    const str = JSON.stringify(data);
+    return Files.add(this.path, stringToStream(str));
+  }
+  async update(data: PlayerData, createNew = false) {
+    const str = JSON.stringify(data);
+    return Files.update(
+      this.path,
+      stringToStream(str),
+      createNew,
+    );
+  }
+  async remove() {
+    return Files.remove(this.path);
+  }
 
-export class SaveManager implements AssetManager {
-  storage: FileManager;
-  base: string;
-  constructor(storage: FileManager) {
-    this.storage = storage;
-    this.base = `zumbor/saves/`;
+  async save(data: PlayerData): Promise<true | Error> {
+    return await this.update(data, true);
   }
-  get(usertag: string) {
-    return this.storage.get(`${this.base}${usertag}`);
-  }
-  async add(usertag: string, data: SaveData) {
-    const str = JSON.stringify(data);
-    return this.storage.add(`${this.base}${usertag}`, stringToStream(str));
-  }
-  async update(usertag: string, data: SaveData) {
-    const str = JSON.stringify(data);
-    return this.storage.update(`${this.base}${usertag}`, stringToStream(str));
-  }
-  async remove(usertag: string) {
-    return this.storage.remove(`${this.base}${usertag}`);
-  }
-  async load(usertag : string) {
-    const res = await this.get(usertag);
-    if(res instanceof Error) return res;
+  async load(): Promise<PlayerData | Error> {
+    const res = await this.get();
+    if (res instanceof Error) return res;
 
     const textData = await streamToString(res);
     return JSON.parse(textData);

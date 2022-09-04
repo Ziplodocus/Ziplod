@@ -1,9 +1,9 @@
 import { readdir, readdirSync } from "fs";
 import { prefix } from "../data/config.js";
 import { client } from "../ziplod.js";
-import { TextChannel } from "discord.js";
+import { DataResolver, TextChannel } from "discord.js";
 import { basename } from "path";
-import {Readable} from "stream";
+import { Readable } from "stream";
 
 // Deletes commands the last 50 commands in the given text channel
 export function delCommands(channel: TextChannel, time = 11000) {
@@ -67,10 +67,18 @@ export function stringToStream(str: string) {
   return stream;
 }
 
-export async function streamToString(stream : Readable) {
-  const chunks = []
+export async function streamToString(stream: Readable) {
+  const chunks = [];
   for await (let chunk of stream) {
-    chunks.push(chunk)
+    chunks.push(chunk);
   }
   return Buffer.concat(chunks).toString();
 }
+
+export const sleep = (ms: number): Promise<void> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
+  });
+};

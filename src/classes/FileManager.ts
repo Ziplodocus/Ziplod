@@ -4,6 +4,7 @@ import { Readable } from "stream";
 export interface AssetManager {
   get: (path: string, ...args: any[]) => Promise<Readable | Error>;
   add: (path: string, ...args: any[]) => Promise<File | Error>;
+  // update: (path: string, ...args: any[]) => Promise<true | Error>;
   remove: (path: string, ...args: any[]) => Promise<true | Error>;
 }
 
@@ -71,7 +72,7 @@ export class FileManager implements AssetManager {
     return file;
   }
 
-  async update(path: string, stream : Readable) {
+  async update(path: string, stream: Readable, createNew = false) {
     const isValid = this.isValid(path);
     if (isValid instanceof Error) {
       console.error(isValid);
@@ -80,8 +81,7 @@ export class FileManager implements AssetManager {
 
     const file = this.bucket.file(path);
 
-    const exists = (await file.exists())[0];
-    if (!exists) {
+    if (!createNew && !((await file.exists())[0])) {
       console.error("File doesn't exist to update");
       return new Error("File doesn't exist to update");
     }
@@ -89,7 +89,7 @@ export class FileManager implements AssetManager {
     console.log(`Updating ${file.name}...`);
     stream.pipe(file.createWriteStream());
     console.log(`Updating ${file.name}.`);
-    return file;
+    return true;
   }
 
   async remove(path: string) {
