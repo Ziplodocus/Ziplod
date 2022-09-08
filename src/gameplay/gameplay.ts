@@ -8,17 +8,19 @@ import { UserInterface } from "./classes/UserInterface.js";
 import { ButtonInteraction } from "discord.js";
 
 export async function zumborInit(msg: ExtendedMessage) {
+  // Define our helper classes
   const saveManager = new SaveManager(msg.message.author.tag);
   const ui = new UserInterface(msg);
+
+  // Load existing player data, or create a new player
   let playerData = await saveManager.load();
-  if (playerData instanceof Error) {
-    // get user input for creation of new character : ui.newPlayer()
-    playerData = await ui.newPlayer();
-  }
-  ui.sendPlayerInfo(playerData);
+  if (playerData instanceof Error) playerData = await ui.newPlayer();
+  else ui.sendPlayerInfo(playerData);
   const player = new Player(playerData);
+
   let interaction: ButtonInteraction | undefined;
 
+  // Game loop
   while (true) {
     const encounter = await Encounter.random();
     // Show user encounter text and give options, wait for user input
@@ -44,8 +46,9 @@ export async function zumborInit(msg: ExtendedMessage) {
     interaction = await ui.endEncounter(result, player, interaction);
 
     if (interaction?.customId === "continue") continue;
-    let saveResult = await saveManager.save(player.data);
-    console.log(saveResult);
+    // let saveResult = await saveManager.save(player.data);
+
+    // console.log(saveResult);
     break;
   }
 }

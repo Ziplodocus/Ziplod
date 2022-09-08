@@ -13,11 +13,6 @@ export class Encounter extends EventEmitter {
   constructor(encounter: EncounterData) {
     super();
     this.data = encounter;
-    // this.on(
-    //   EncounterResult.SUCCESS,
-    //   this.getResultHandler(EncounterResult.SUCCESS),
-    // );
-    // this.on(EncounterResult.FAIL, this.getResultHandler(EncounterResult.FAIL));
   }
   static async random(): Promise<EncounterData> {
     return {
@@ -27,7 +22,7 @@ export class Encounter extends EventEmitter {
       options: {
         "Fight": {
           threshold: 8,
-          stat: Attribute.STRENGTH,
+          stat: Attribute.Strength,
           [EncounterResult.SUCCESS]: {
             type: EncounterResult.SUCCESS,
             title: "Goblin pancakes for dinner!",
@@ -46,7 +41,7 @@ export class Encounter extends EventEmitter {
         },
         "Run": {
           threshold: 5,
-          stat: Attribute.AGILITY,
+          stat: Attribute.Agility,
           [EncounterResult.SUCCESS]: {
             type: EncounterResult.SUCCESS,
             title: "You escaped!",

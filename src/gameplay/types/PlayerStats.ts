@@ -1,9 +1,8 @@
 export type PlayerStats = Record<Attribute, number>;
 
 export enum Attribute {
-  STRENGTH = "strength",
-  WISDOM = "wisdom",
-  AGILITY = "agility",
-  TALENT = "talent",
-  CHARISMA = "charisma",
+  Strength = "strength",
+  Wisdom = "wisdom",
+  Agility = "agility",
+  Charisma = "charisma",
 }

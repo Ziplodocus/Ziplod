@@ -1,14 +1,12 @@
 import {
   ButtonInteraction,
-  ColorResolvable,
   DMChannel,
-  EmbedFieldData,
   Message,
   MessageActionRow,
   MessageButton,
   MessageEmbedOptions,
   MessageOptions,
-  MessagePayload,
+  ModalSubmitInteraction,
   NewsChannel,
   PartialDMChannel,
   TextChannel,
@@ -17,7 +15,6 @@ import {
   VoiceChannel,
 } from "discord.js";
 import ExtendedMessage from "../../classes/ExtendedMessage.js";
-import { sleep } from "../../utility/other.js";
 import { waitUntilEvent } from "../helpers.js";
 import {
   Attribute,
@@ -25,7 +22,12 @@ import {
   EncounterOptionResult,
   EncounterResult,
   PlayerData,
+  PlayerStats,
 } from "../types/index.js";
+import { NewPlayerModal } from "./Modals/newPlayerModal.js";
+import { NewPlayerStatsModal } from "./Modals/NewPlayerStatsModal.js";
+import { zModal } from "./Modals/zModal.js";
+import { Player } from "./Player.js";
 
 type DiscordChannel =
   | TextChannel
@@ -48,20 +50,95 @@ export class UserInterface {
   Gets the information required to start a new character
   */
   async newPlayer(): Promise<PlayerData> {
-    const player = {
-      name: "bonk",
-      description:
-        "A wily elf with a bone to pick with those self righteous goblins",
-      health: 23,
-      score: 0,
-      stats: {
-        [Attribute.STRENGTH]: 5,
-        [Attribute.WISDOM]: 2,
-        [Attribute.AGILITY]: 1,
-        [Attribute.TALENT]: 1,
-        [Attribute.CHARISMA]: -2,
-      },
+    // Send a message containing a button to begin character creation
+    const message = await this.channel.send({
+      embeds: [{
+        title: "Character Creator",
+        description: "Click button to begin.",
+      }],
+      components: [
+        new MessageActionRow({
+          components: [
+            new MessageButton({
+              type: 2,
+              customId: "character_create",
+              style: 1,
+              label: "Create",
+            }),
+          ],
+        }),
+      ],
+    });
+
+    // wait for the button interaction and display the modal
+    let i = await this.response(message);
+    console.log(i.customId);
+
+    const modal = new NewPlayerModal();
+    const modalRes = await modal.response(i, this.user.id);
+
+    // Destructure modal response into name and description
+    const charDetails = modal.fields as unknown as { name: string, description: string; };
+
+    // Send a follow up to get player stats
+    const statsMessage = await modalRes.reply({
+      fetchReply: true,
+      embeds: [{
+        title: charDetails.name,
+        description: charDetails.description,
+      }],
+      components: [
+        new MessageActionRow({
+          components: [
+            new MessageButton({
+              type: 2,
+              customId: "character_stats",
+              style: 1,
+              label: "Choose Stats",
+            }),
+          ],
+        }),
+      ],
+    });
+    i = await this.response(statsMessage as Message);
+
+    // Keep requesting until
+    const getNewPlayerStats: () => Promise<[PlayerStats, ModalSubmitInteraction]> = async () => {
+      const statModal = new NewPlayerStatsModal();
+      const statRes = await statModal.response(i, this.user.id);
+      const charStats = statModal.fields as unknown as PlayerStats;
+
+      let total = 0;
+      for (const stat in charStats) {
+        const statnum = parseInt(stat);
+        total += statnum;
+        if (statnum < -5 || statnum > 5) {
+          const msg = await statRes.reply({
+            fetchReply: true,
+            embeds: [{
+              title: 'Invalid stats!',
+              description: 'You have a maximum of 5 points to allocate, and each stat must be within -5 to 5'
+            }]
+          }) as Message;
+          i = await this.response(msg);
+          return getNewPlayerStats();
+        }
+      }
+      if (total > 5) return getNewPlayerStats();
+      return [charStats, statRes];
     };
+    const [charStats, statRes] = await getNewPlayerStats();
+
+    const player: PlayerData = {
+      ...charDetails,
+      health: 15,
+      score: 0,
+      stats: charStats
+    };
+
+    statRes.reply({
+      embeds: [this.playerToEmbedOptions(player)]
+    });
     return player;
   }
 
@@ -94,20 +171,7 @@ export class UserInterface {
       components: [],
       embeds: [
         ...interaction.message.embeds,
-        {
-          title: result.title,
-          description: result.text,
-          color: result.type === EncounterResult.SUCCESS
-            ? [20, 240, 60]
-            : [240, 40, 20],
-          fields: [
-            {
-              name: result.effect,
-              value: (result.value > 0 ? "+" : "") + result.value.toString(),
-              inline: true,
-            },
-          ],
-        },
+        this.resultToEmbedOptions(result),
         this.playerToEmbedOptions(playerData, {
           showDesc: false,
           showStats: false,
@@ -141,7 +205,7 @@ export class UserInterface {
           "type": 2,
           "style": 1,
           "label": label,
-          "custom_id": label,
+          "customId": label,
         }),
       );
     }
@@ -160,10 +224,30 @@ export class UserInterface {
     };
   }
 
+  // Takes an Encounter result and converts it two embed options
+  private resultToEmbedOptions(
+    result: EncounterOptionResult,
+  ): MessageEmbedOptions {
+    return {
+      title: result.title,
+      description: result.text,
+      color: result.type === EncounterResult.SUCCESS
+        ? [20, 240, 60]
+        : [240, 40, 20],
+      fields: [
+        {
+          name: result.effect,
+          value: (result.value > 0 ? "+" : "") + result.value.toString(),
+          inline: true,
+        },
+      ],
+    };
+  }
+
   // Creates an embed object from the player options
   private playerToEmbedOptions(
     player: PlayerData,
-    options?: { showStats?: boolean; showDesc?: boolean; showTitle?: boolean },
+    options?: { showStats?: boolean; showDesc?: boolean; showTitle?: boolean; },
   ): MessageEmbedOptions {
     options = {
       showStats: true,
@@ -201,24 +285,6 @@ export class UserInterface {
     };
   }
 
-  /* Statically define the buttons to prompt continue or exit */
-  private static continueMessageActionRow = new MessageActionRow({
-    components: [
-      new MessageButton({
-        "type": 2,
-        "style": 1,
-        "label": "Continue your journey",
-        "custom_id": "continue",
-      }),
-      new MessageButton({
-        "type": 2,
-        "style": 1,
-        "label": "Take a break",
-        "custom_id": "break",
-      }),
-    ],
-  });
-
   /*
   Defines a collector to listen and WAIT for a single
   button interaction from the current player
@@ -236,4 +302,33 @@ export class UserInterface {
     const res: ButtonInteraction = await waitUntilEvent(collector, "collect");
     return res;
   }
+
+  async niceMessage(
+    title: string,
+    description: string,
+    additionalMessageOptions?: MessageOptions,
+  ) {
+    this.channel.send({
+      ...additionalMessageOptions,
+      embeds: [{ title, description }],
+    });
+  }
+
+  /* Statically define the buttons to prompt continue or exit */
+  private static continueMessageActionRow = new MessageActionRow({
+    components: [
+      new MessageButton({
+        "type": 2,
+        "style": 1,
+        "label": "Continue your journey",
+        "custom_id": "continue",
+      }),
+      new MessageButton({
+        "type": 2,
+        "style": 1,
+        "label": "Take a break",
+        "custom_id": "break",
+      }),
+    ],
+  });
 }
