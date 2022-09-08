@@ -1,11 +1,13 @@
 import {
   ButtonInteraction,
   DMChannel,
+  InteractionReplyOptions,
   Message,
   MessageActionRow,
   MessageButton,
   MessageEmbedOptions,
   MessageOptions,
+  MessagePayload,
   ModalSubmitInteraction,
   NewsChannel,
   PartialDMChannel,
@@ -24,10 +26,8 @@ import {
   PlayerData,
   PlayerStats,
 } from "../types/index.js";
-import { NewPlayerModal } from "./Modals/newPlayerModal.js";
+import { NewPlayerModal } from "./Modals/NewPlayerModal.js";
 import { NewPlayerStatsModal } from "./Modals/NewPlayerStatsModal.js";
-import { zModal } from "./Modals/zModal.js";
-import { Player } from "./Player.js";
 
 type DiscordChannel =
   | TextChannel
@@ -81,53 +81,59 @@ export class UserInterface {
     const charDetails = modal.fields as unknown as { name: string, description: string; };
 
     // Send a follow up to get player stats
-    const statsMessage = await modalRes.reply({
-      fetchReply: true,
-      embeds: [{
-        title: charDetails.name,
-        description: charDetails.description,
-      }],
-      components: [
-        new MessageActionRow({
-          components: [
-            new MessageButton({
-              type: 2,
-              customId: "character_stats",
-              style: 1,
-              label: "Choose Stats",
-            }),
-          ],
-        }),
-      ],
-    });
-    i = await this.response(statsMessage as Message);
+    // @ts-ignore
+    const statsMessage : Message= await modalRes.reply(this.statsRequestMsg(charDetails.name, charDetails.description));
+    i = await this.response(statsMessage);
 
-    // Keep requesting until
-    const getNewPlayerStats: () => Promise<[PlayerStats, ModalSubmitInteraction]> = async () => {
+    let statRes: ModalSubmitInteraction | undefined;
+    // Keep requesting until stats are valid
+    const getNewPlayerStats: () => Promise<PlayerStats> = async () => {
       const statModal = new NewPlayerStatsModal();
-      const statRes = await statModal.response(i, this.user.id);
-      const charStats = statModal.fields as unknown as PlayerStats;
+      statRes = await statModal.response(i, this.user.id);
+      const maybeCharStats = statModal.fields;
+      let charStats: Record<string, number> = {};
 
       let total = 0;
-      for (const stat in charStats) {
-        const statnum = parseInt(stat);
+
+
+      for (const stat in maybeCharStats) {
+        let val = maybeCharStats[stat];
+        console.log(val);
+        const statnum = parseInt(val);
         total += statnum;
+        console.log(statnum);
         if (statnum < -5 || statnum > 5) {
-          const msg = await statRes.reply({
-            fetchReply: true,
-            embeds: [{
-              title: 'Invalid stats!',
-              description: 'You have a maximum of 5 points to allocate, and each stat must be within -5 to 5'
-            }]
-          }) as Message;
+          console.error('Range error');
+          // @ts-ignore
+          const msg : Message = await statRes.reply(
+            this.statsRequestMsg(
+              'Invalid stats!',
+              'You have a maximum of 5 points to allocate, and each stat must be within -5 to 5',
+            )
+          );
           i = await this.response(msg);
           return getNewPlayerStats();
         }
+        charStats[stat] = parseInt(val);
       }
-      if (total > 5) return getNewPlayerStats();
-      return [charStats, statRes];
+
+
+      if (total > 5) {
+        // @ts-ignore
+        const msg : Message = await statRes.reply(
+          this.statsRequestMsg(
+            'Invalid stats!',
+            'You have a maximum of 5 points to allocate, and each stat must be within -5 to 5',
+          )
+        );
+        i = await this.response(msg);
+        return getNewPlayerStats();
+      }
+
+
+      return charStats as unknown as PlayerStats;
     };
-    const [charStats, statRes] = await getNewPlayerStats();
+    const charStats = await getNewPlayerStats();
 
     const player: PlayerData = {
       ...charDetails,
@@ -136,7 +142,7 @@ export class UserInterface {
       stats: charStats
     };
 
-    statRes.reply({
+    statRes?.reply({
       embeds: [this.playerToEmbedOptions(player)]
     });
     return player;
@@ -174,7 +180,7 @@ export class UserInterface {
         this.resultToEmbedOptions(result),
         this.playerToEmbedOptions(playerData, {
           showDesc: false,
-          showStats: false,
+          showStats: true,
         }),
       ],
     });
@@ -283,6 +289,30 @@ export class UserInterface {
       ],
       fields,
     };
+  }
+
+
+  private statsRequestMsg( title : string, description : string ) {
+    const optns : InteractionReplyOptions = {
+      fetchReply: true,
+      embeds: [{
+        title,
+        description,
+      }],
+      components: [
+        new MessageActionRow({
+          components: [
+            new MessageButton({
+              type: 2,
+              customId: "character_stats",
+              style: 1,
+              label: "Choose Stats",
+            }),
+          ],
+        }),
+      ],
+    }
+    return optns;
   }
 
   /*
