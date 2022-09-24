@@ -47,7 +47,7 @@ export class Player extends EventEmitter
     this._data.score++;
   }
   "no effect" = (nada: any) => {};
-  "charisma" = (n: number) => {
-    this._data.stats.charisma++;
+  "charisma" = (n = 1) => {
+    this._data.stats.charisma += n;
   };
 }

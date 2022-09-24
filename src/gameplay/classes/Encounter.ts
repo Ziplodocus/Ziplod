@@ -1,5 +1,3 @@
-import { streamToString } from "../../utility/other.js";
-import { Files } from "../../ziplod.js";
 import { EventEmitter } from "../helpers.js";
 import {
   Attribute,
@@ -23,7 +21,7 @@ export class Encounter extends EventEmitter {
         "Fight": {
           threshold: 8,
           stat: Attribute.Strength,
-          [EncounterResult.SUCCESS]: {
+          success: {
             type: EncounterResult.SUCCESS,
             title: "Goblin pancakes for dinner!",
             text:
@@ -31,7 +29,7 @@ export class Encounter extends EventEmitter {
             effect: PlayerEffect.CHARISMA,
             value: 1,
           },
-          [EncounterResult.FAIL]: {
+          fail: {
             type: EncounterResult.FAIL,
             title: "Oof",
             text: "That Gobbo was tougher than he looked...",
@@ -42,14 +40,14 @@ export class Encounter extends EventEmitter {
         "Run": {
           threshold: 5,
           stat: Attribute.Agility,
-          [EncounterResult.SUCCESS]: {
+          success: {
             type: EncounterResult.SUCCESS,
             title: "You escaped!",
             text: "Guess you didn't fancy your chances.",
             effect: PlayerEffect.HEAL,
             value: 1,
           },
-          [EncounterResult.FAIL]: {
+          fail: {
             type: EncounterResult.FAIL,
             title: "Agh!",
             text:
@@ -61,14 +59,4 @@ export class Encounter extends EventEmitter {
       },
     };
   }
-
-  // const res = await Files.get("zumbor/encounters/pow.json");
-  // if (res instanceof Error) {
-  //   return res;
-  // }
-  // return new Encounter(JSON.parse(await streamToString(res)));
 }
-// getResultHandler = (type: EncounterResult) => {
-//   return (option: EncounterOption) =>
-//     player[option[type].effect](option[type].value);
-// };

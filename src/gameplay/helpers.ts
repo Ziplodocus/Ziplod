@@ -1,4 +1,3 @@
-import { Attribute, PlayerData } from "./types/index.js";
 
 export const rollD = (num: number, modifier = 0) =>
   Math.ceil(Math.random() * num) + modifier;
