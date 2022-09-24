@@ -43,7 +43,15 @@ export async function zumborInit(msg: ExtendedMessage) {
     // Handles the results of the encounter
     player[result.effect](result.value);
     player.incrementScore();
-    interaction = await ui.endEncounter(result, player, interaction);
+    await ui.endEncounter(result, player, interaction);
+
+    if (player.health <= 0) {
+      ui.death();
+      // ScoreBoard.set(player);
+      break;
+    }
+
+    interaction = await ui.nextEncounter();
 
     if (interaction?.customId === "continue") continue;
     // let saveResult = await saveManager.save(player.data);

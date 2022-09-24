@@ -24,7 +24,7 @@ import {
   PlayerData,
   PlayerStats,
 } from "../types/index.js";
-import { NewPlayerModal } from "./Modals/newPlayerModal.js";
+import { NewPlayerModal } from "./Modals/NewPlayerModal.js";
 import { NewPlayerStatsModal } from "./Modals/NewPlayerStatsModal.js";
 import { zModal } from "./Modals/zModal.js";
 import { Player } from "./Player.js";
@@ -39,6 +39,12 @@ type DiscordChannel =
 
 // Handles messaging the user and returning their responses
 export class UserInterface {
+  deathMessage() {
+    throw new Error("Method not implemented.");
+  }
+  endGame() {
+    throw new Error("Method not implemented.");
+  }
   channel: DiscordChannel;
   user: User;
   constructor(msg: ExtendedMessage) {
@@ -166,7 +172,6 @@ export class UserInterface {
     playerData: PlayerData,
     interaction: ButtonInteraction,
   ) {
-    // const message = await this.channel.send();
     await interaction.update({
       components: [],
       embeds: [
@@ -178,6 +183,12 @@ export class UserInterface {
         }),
       ],
     });
+  }
+
+  /*
+  Message to prompt to continue playing or take a break
+  */
+  async nextEncounter() {
     const msg = await this.channel.send({
       components: [UserInterface.continueMessageActionRow],
     });
@@ -186,11 +197,25 @@ export class UserInterface {
     return inter;
   }
 
+  /*
+  Message to send when the player dies
+  */
+  death() {
+    this.niceMessage(
+      'Oh no! You\'ve Died',
+      'It\'s the end of the road for you numbskull. Never fear, there\'s planty more Zumbor where that came from'
+    );
+  }
+
+  /*
+  Sends a message containing the player information
+  */
   sendPlayerInfo(player: PlayerData) {
     this.channel.send({
       embeds: [this.playerToEmbedOptions(player)],
     });
   }
+
   /*
   Converts data about the encounter into message options,
   including a button for each of the encounters response options
@@ -224,7 +249,7 @@ export class UserInterface {
     };
   }
 
-  // Takes an Encounter result and converts it two embed options
+  // Takes an Encounter result and converts it to embed options
   private resultToEmbedOptions(
     result: EncounterOptionResult,
   ): MessageEmbedOptions {
@@ -303,12 +328,13 @@ export class UserInterface {
     return res;
   }
 
+  // A helper for constructing a simple embed message
   async niceMessage(
     title: string,
     description: string,
     additionalMessageOptions?: MessageOptions,
   ) {
-    this.channel.send({
+    return this.channel.send({
       ...additionalMessageOptions,
       embeds: [{ title, description }],
     });

@@ -12,6 +12,9 @@ export class Player extends EventEmitter
     super();
     this._data = data;
   }
+  get user() {
+    return this._data.user;
+  }
   get data() {
     return this._data;
   }
