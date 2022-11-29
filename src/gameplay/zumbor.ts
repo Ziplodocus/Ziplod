@@ -1,18 +1,19 @@
 import { Player } from "./classes/Player.js";
 import { SaveManager } from "./classes/SaveManager.js";
 
-import { random as randomEncounter } from "./classes/Encounter.js";
 import ExtendedMessage from "../classes/ExtendedMessage.js";
-import { EncounterResult, PlayerData } from "./types/index.js";
+import { EncounterResult, PlayerData } from "@ziplodocus/zumbor-types";
 import { UserInterface } from "./classes/UserInterface.js";
 import { ButtonInteraction } from "discord.js";
 import { EncounterManager } from "./classes/EncounterManager.js";
-import { Files, GoogleStorage } from "../ziplod.js";
+import { Files } from "../ziplod.js";
+import { ScoreBoard } from "./classes/ScoreBoard.js";
 
 
 const encounters = new EncounterManager(Files);
+export const scoreboard = new ScoreBoard();
 // Tracks running game instances to prevent one player creating multiple instances
-const runningGames : Set<string> = new Set();
+const runningGames: Set<string> = new Set();
 
 export async function zumborInit(msg: ExtendedMessage) {
   if (runningGames.has(msg.message.author.id)) return msg.message.reply('You already have a Zumbor instance running dumbo.');
@@ -22,7 +23,7 @@ export async function zumborInit(msg: ExtendedMessage) {
   const ui = new UserInterface(msg);
 
   // Load existing player data, or create a new player
-  let playerData : Error | PlayerData = new Error('bonk'); //await saveManager.load();
+  let playerData: Error | PlayerData = await saveManager.load();
   if (playerData instanceof Error) playerData = await ui.newPlayer();
   else ui.sendPlayerInfo(playerData);
   const player = new Player(playerData);
@@ -38,11 +39,9 @@ export async function zumborInit(msg: ExtendedMessage) {
     }
     // Show user encounter text and give options, wait for user input
     interaction = await ui.startEncounter(encounter);
-    console.log("This is the option: " + interaction.customId);
 
     // Roll for the encounter option selected and trigger success/fail on encounter
     let option = encounter.options[interaction.customId];
-    console.log("Selected option:", option);
 
     // Determine outcome
     const roll = player.roll(option.stat);
@@ -51,16 +50,17 @@ export async function zumborInit(msg: ExtendedMessage) {
     const isSuccess = roll > option.threshold;
 
     const result = option[EncounterResult[isSuccess ? "SUCCESS" : "FAIL"]];
-    console.log(result);
 
     // Handles the results of the encounter
-    player[result.effect](result.value);
+    player[result.effect](result.potency);
     player.incrementScore();
     await ui.endEncounter(result, player, interaction);
 
     if (player.health <= 0) {
       ui.death();
-      // ScoreBoard.set(player);
+      const didWin = await scoreboard.set(player.data);
+      if (didWin instanceof Error) return console.warn(didWin);
+      didWin ? ui.niceMessage('Winner!', 'You\'ve made the board') : ui.niceMessage('Lose!', 'I knew you wouldn\'t make it');
       break;
     }
 
@@ -73,7 +73,7 @@ export async function zumborInit(msg: ExtendedMessage) {
 
     runningGames.delete(msg.message.author.id);
 
-    console.log(saveResult);
+    console.log('Save successful?:' + saveResult);
     break;
   }
 }

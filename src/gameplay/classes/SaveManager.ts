@@ -1,6 +1,6 @@
 import { streamToString, stringToStream } from "../../utility/other.js";
 import { Files } from "../../ziplod.js";
-import { PlayerData } from "../types/index.js";
+import { PlayerData } from "@ziplodocus/zumbor-types";
 
 export class SaveManager {
   path: string;

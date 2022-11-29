@@ -7,7 +7,6 @@ import {
   MessageButton,
   MessageEmbedOptions,
   MessageOptions,
-  MessagePayload,
   ModalSubmitInteraction,
   NewsChannel,
   PartialDMChannel,
@@ -25,7 +24,7 @@ import {
   EncounterResult,
   PlayerData,
   PlayerStats,
-} from "../types/index.js";
+} from "@ziplodocus/zumbor-types";
 import { NewPlayerModal } from "./Modals/NewPlayerModal.js";
 import { NewPlayerStatsModal } from "./Modals/NewPlayerStatsModal.js";
 
@@ -78,7 +77,6 @@ export class UserInterface {
 
     // wait for the button interaction and display the modal
     let i = await this.response(message);
-    console.log(i.customId);
 
     const modal = new NewPlayerModal();
     const modalRes = await modal.response(i, this.user.id);
@@ -88,7 +86,7 @@ export class UserInterface {
 
     // Send a follow up to get player stats
     // @ts-ignore
-    const statsMessage : Message= await modalRes.reply(this.statsRequestMsg(charDetails.name, charDetails.description));
+    const statsMessage: Message = await modalRes.reply(this.statsRequestMsg(charDetails.name, charDetails.description));
     i = await this.response(statsMessage);
 
     let statRes: ModalSubmitInteraction | undefined;
@@ -101,17 +99,14 @@ export class UserInterface {
 
       let total = 0;
 
-
       for (const stat in maybeCharStats) {
         let val = maybeCharStats[stat];
-        console.log(val);
         const statnum = parseInt(val);
         total += statnum;
-        console.log(statnum);
         if (statnum < -5 || statnum > 5) {
           console.error('Range error');
           // @ts-ignore
-          const msg : Message = await statRes.reply(
+          const msg: Message = await statRes.reply(
             this.statsRequestMsg(
               'Invalid stats!',
               'You have a maximum of 5 points to allocate, and each stat must be within -5 to 5',
@@ -126,7 +121,7 @@ export class UserInterface {
 
       if (total > 5) {
         // @ts-ignore
-        const msg : Message = await statRes.reply(
+        const msg: Message = await statRes.reply(
           this.statsRequestMsg(
             'Invalid stats!',
             'You have a maximum of 5 points to allocate, and each stat must be within -5 to 5',
@@ -210,7 +205,7 @@ export class UserInterface {
   death() {
     this.niceMessage(
       'Oh no! You\'ve Died',
-      'It\'s the end of the road for you numbskull. Never fear, there\'s planty more Zumbor where that came from'
+      'It\'s the end of the road for you numbskull. Never fear, there\'s plenty more Zumbor where that came from'
     );
   }
 
@@ -230,7 +225,6 @@ export class UserInterface {
   private encounterToMessageOptions(
     encounter: EncounterData,
   ): MessageOptions {
-    console.log(encounter);
     let rowComponents = [];
     for (const label in encounter.options) {
       rowComponents.push(
@@ -251,7 +245,7 @@ export class UserInterface {
         {
           title: encounter.title,
           description: encounter.text,
-          color: encounter.color || "FUCHSIA",
+          color: 3 //encounter.color || "FUCHSIA",
         },
       ],
     };
@@ -270,7 +264,7 @@ export class UserInterface {
       fields: [
         {
           name: result.effect,
-          value: (result.value > 0 ? "+" : "") + result.value.toString(),
+          value: (result.potency > 0 ? "+" : "") + result.potency.toString(),
           inline: true,
         },
       ],
@@ -310,8 +304,8 @@ export class UserInterface {
         : undefined,
       description: options.showDesc ? player.description : undefined,
       color: [
-        Math.max(255 - (player.health / 25 * 255), 0),
-        Math.min((player.health / 25) * 255, 255),
+        Math.min(Math.max(255 - (player.health / 20 * 255), 0), 255),
+        Math.max(Math.min((player.health / 20) * 255, 255), 0),
         0,
       ],
       fields,
@@ -319,8 +313,8 @@ export class UserInterface {
   }
 
 
-  private statsRequestMsg( title : string, description : string ) {
-    const optns : InteractionReplyOptions = {
+  private statsRequestMsg(title: string, description: string) {
+    const optns: InteractionReplyOptions = {
       fetchReply: true,
       embeds: [{
         title,
@@ -338,7 +332,7 @@ export class UserInterface {
           ],
         }),
       ],
-    }
+    };
     return optns;
   }
 

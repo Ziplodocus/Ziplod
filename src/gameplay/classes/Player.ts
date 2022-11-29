@@ -1,5 +1,6 @@
 import { EventEmitter, rollD } from "../helpers.js";
-import { Attribute, PlayerData, PlayerEffect } from "../types/index.js";
+import { Attribute, PlayerData, PlayerEffect } from "@ziplodocus/zumbor-types";
+import { NewPlayerStatsModal } from "./Modals/NewPlayerStatsModal.js";
 
 type PlayerEffectType = {
   [key in PlayerEffect]: (...a: any[]) => any;
@@ -34,20 +35,18 @@ export class Player extends EventEmitter
     return this._data.stats;
   }
 
-  damage(n = 1) {
-    this._data.health -= n;
-  }
-  heal(n = 1) {
-    this._data.health += n;
-  }
   roll(attr: Attribute) {
     return rollD(20, this.stats[attr]);
   }
   incrementScore() {
     this._data.score++;
   }
-  "no effect" = (nada: any) => {};
-  "charisma" = (n = 1) => {
-    this._data.stats.charisma += n;
-  };
+
+  "Damage" = (n = 1) => this._data.health -= n;
+  "Heal" = (n = 1) => this._data.health += n;
+  "No effect" = (_: any) => {};
+  "Charisma" = (n = 1) => this._data.stats[Attribute.CHARISMA] += n;
+  "Strength" = (n = 1) => this._data.stats[Attribute.STRENGTH] += n;
+  "Wisdom" = (n = 1) => this._data.stats[Attribute.WISDOM] += n;
+  "Agility" = (n = 1) => this._data.stats[Attribute.AGILITY] += n;
 }

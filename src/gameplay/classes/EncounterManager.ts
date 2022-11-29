@@ -1,5 +1,5 @@
 import { FileManager } from "../../classes/FileManager.js";
-import { EncounterData } from "../types/EncounterData.js";
+import { EncounterData, validateEncounterData } from "@ziplodocus/zumbor-types";
 
 export class EncounterManager {
   storage: FileManager;
@@ -10,10 +10,11 @@ export class EncounterManager {
     this.cache = [];
   }
 
-  async get() : Promise<EncounterData | Error> {
-    if (this.cache.length === 0) this.updateCache();
+  async get(): Promise<EncounterData | Error> {
+    if (this.cache.length === 0) await this.updateCache();
     const rand = Math.floor(this.cache.length * Math.random());
-    return this.cache[rand];
+    const encounter = this.cache[rand];
+    return encounter;
   }
 
   // Looks at all the user's themes in the bucket,
@@ -24,11 +25,22 @@ export class EncounterManager {
     const allFiles = await this.storage.getAll(`zumbor/encounters`);
 
     // Increment cacheer for each theme of that type
-    allFiles.forEach((file) => {
-        const res = file.download();
+    const results = allFiles.map(async (file) => {
+      try {
+        const res = await file.download();
         const resolved = res.toString();
-        const encounter : EncounterData = JSON.parse(resolved);
-        this.cache.push(encounter);
+        const encounter = JSON.parse(resolved);
+        const validData = validateEncounterData(encounter);
+        if (validData instanceof Error) {
+          console.warn('JSON is invalid: ' + file.name);
+          console.warn(validData);
+          return;
+        };
+        this.cache.push(validData);
+      } catch (e) {
+        console.warn(e);
+      }
     });
+    await Promise.allSettled(results);
   }
 }

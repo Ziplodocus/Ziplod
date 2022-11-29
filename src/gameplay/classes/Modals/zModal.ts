@@ -1,5 +1,4 @@
-import { ButtonInteraction, Modal, ModalOptions, ModalSubmitInteraction, TextInputComponent, User } from "discord.js";
-import { PlayerStats } from "../../types";
+import { ButtonInteraction, Modal, ModalOptions, User } from "discord.js";
 
 export class zModal extends Modal {
     fields: Record<string, string>;

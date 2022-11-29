@@ -20,6 +20,7 @@ export async function messageCreate(message: Message): Promise<void> {
     );
     return command(extMsg);
   } catch (e) {
+    console.log(e);
   }
   if (Tracks.count[extMsg.command]) return playTrack(extMsg);
   message.reply("\n That is not one of my many powerful commands tiny person");
