@@ -184,6 +184,8 @@ export class UserInterface {
         }),
       ],
     });
+
+
     const msg = await this.channel.send({
       components: [UserInterface.continueMessageActionRow],
     });
@@ -204,6 +206,7 @@ export class UserInterface {
   private encounterToMessageOptions(
     encounter: EncounterData,
   ): MessageOptions {
+    console.log(encounter);
     let rowComponents = [];
     for (const label in encounter.options) {
       rowComponents.push(

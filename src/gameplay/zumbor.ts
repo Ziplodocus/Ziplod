@@ -1,12 +1,16 @@
 import { Player } from "./classes/Player.js";
 import { SaveManager } from "./classes/SaveManager.js";
 
-import { Encounter } from "./classes/Encounter.js";
+import { random as randomEncounter } from "./classes/Encounter.js";
 import ExtendedMessage from "../classes/ExtendedMessage.js";
 import { EncounterResult, PlayerData } from "./types/index.js";
 import { UserInterface } from "./classes/UserInterface.js";
 import { ButtonInteraction } from "discord.js";
+import { EncounterManager } from "./classes/EncounterManager.js";
+import { Files, GoogleStorage } from "../ziplod.js";
 
+
+const encounters = new EncounterManager(Files);
 // Tracks running game instances to prevent one player creating multiple instances
 const runningGames : Set<string> = new Set();
 
@@ -27,7 +31,11 @@ export async function zumborInit(msg: ExtendedMessage) {
 
   // Game loop
   while (true) {
-    const encounter = await Encounter.random();
+    const encounter = await encounters.get();
+    if (encounter instanceof Error) {
+      console.error(encounter);
+      break;
+    }
     // Show user encounter text and give options, wait for user input
     interaction = await ui.startEncounter(encounter);
     console.log("This is the option: " + interaction.customId);
