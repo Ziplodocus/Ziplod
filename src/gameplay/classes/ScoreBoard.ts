@@ -1,6 +1,7 @@
 import { streamToString, stringToStream } from "../../utility/other.js";
 import { Files } from "../../ziplod.js";
 import { PlayerData } from "@ziplodocus/zumbor-types";
+import { Error404 } from "../../classes/Errors.js";
 
 export class ScoreBoard {
     path: string;
@@ -15,7 +16,11 @@ export class ScoreBoard {
     async get(): Promise<PlayerData[] | Error> {
         if (this.cache) return this.cache;
         const res = await Files.get(this.path);
-        if (res instanceof Error) return res;
+        if (res instanceof Error404) {
+            await Files.add(this.path, stringToStream('[]'));
+            return [];
+        }
+        else if (res instanceof Error) return res;
         const json = await streamToString(res);
         const scoreboard = JSON.parse(json);
         if (!Array.isArray(scoreboard)) return new Error('Fetched scoreboard is not an array!');

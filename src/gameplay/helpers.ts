@@ -1,9 +1,10 @@
+import { MessageOptions, TextBasedChannel } from "discord.js";
 
 export const rollD = (num: number, modifier = 0) =>
   Math.ceil(Math.random() * num) + modifier;
 
 export class EventEmitter {
-  private _events: { [name: string]: ((event: any) => any)[] };
+  private _events: { [name: string]: ((event: any) => any)[]; };
   constructor() {
     this._events = {};
   }
@@ -33,4 +34,13 @@ export function waitUntilEvent(
     };
     item.on(event, listener);
   });
+}
+
+export function getChannelMessager(channel: TextBasedChannel) {
+  return function(title: string, description: string, additionalMessageOptions?: MessageOptions) {
+    return channel.send({
+      ...additionalMessageOptions,
+      embeds: [{ title, description }]
+    });
+  };
 }

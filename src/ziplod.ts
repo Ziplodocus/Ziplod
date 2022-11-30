@@ -6,8 +6,6 @@ import { FileManager } from "./classes/FileManager.js";
 import { TrackManager } from "./classes/TrackManager.js";
 import { ThemeManager } from "./classes/ThemeManager.js";
 import { Storage } from "@google-cloud/storage";
-import { EncounterManager } from "./gameplay/classes/EncounterManager.js";
-import { Attribute } from "@ziplodocus/zumbor-types";
 
 // Defining intents
 const intents = {

@@ -1,5 +1,6 @@
 import { Bucket, File } from "@google-cloud/storage";
 import { Readable } from "stream";
+import { Error404 } from "./Errors.js";
 
 export interface AssetManager {
   get: (path: string, ...args: any[]) => Promise<Readable | Error>;
@@ -33,7 +34,7 @@ export class FileManager implements AssetManager {
     const exists = (await file.exists())[0];
     if (!exists) {
       console.error(`${path} does not exist`);
-      return new Error(`${path} does not exist`);
+      return new Error404(`${path} does not exist`);
     }
 
     console.log(`Getting ${file.name}...`);
@@ -88,7 +89,7 @@ export class FileManager implements AssetManager {
 
     console.log(`Updating ${file.name}...`);
     stream.pipe(file.createWriteStream());
-    console.log(`Updating ${file.name}.`);
+    console.log(`Updated ${file.name}.`);
     return true;
   }
 

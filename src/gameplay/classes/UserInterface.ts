@@ -16,7 +16,7 @@ import {
   VoiceChannel,
 } from "discord.js";
 import ExtendedMessage from "../../classes/ExtendedMessage.js";
-import { waitUntilEvent } from "../helpers.js";
+import { getChannelMessager, waitUntilEvent } from "../helpers.js";
 import {
   Attribute,
   EncounterData,
@@ -38,17 +38,13 @@ type DiscordChannel =
 
 // Handles messaging the user and returning their responses
 export class UserInterface {
-  deathMessage() {
-    throw new Error("Method not implemented.");
-  }
-  endGame() {
-    throw new Error("Method not implemented.");
-  }
+  niceMessage: (title: string, description: string, additionalMessageOptions?: MessageOptions | undefined) => Promise<Message<boolean>>;
   channel: DiscordChannel;
   user: User;
   constructor(msg: ExtendedMessage) {
     this.channel = msg.message.channel;
     this.user = msg.message.author;
+    this.niceMessage = getChannelMessager(this.channel);
   }
 
   /*
@@ -174,17 +170,22 @@ export class UserInterface {
     playerData: PlayerData,
     interaction: ButtonInteraction,
   ) {
-    await interaction.update({
-      components: [],
-      embeds: [
-        ...interaction.message.embeds,
-        this.resultToEmbedOptions(result),
-        this.playerToEmbedOptions(playerData, {
-          showDesc: false,
-          showStats: true,
-        }),
-      ],
-    });
+    try {
+      await interaction.update({
+        components: [],
+        embeds: [
+          ...interaction.message.embeds,
+          this.resultToEmbedOptions(result),
+          this.playerToEmbedOptions(playerData, {
+            showDesc: false,
+            showStats: true,
+          }),
+        ],
+      });
+    } catch (e) {
+      console.error(e);
+      return new Error('Something has gone wrong...');
+    }
   }
 
   /*
@@ -292,7 +293,7 @@ export class UserInterface {
       });
       for (const attr in player.stats) {
         fields.push({
-          name: attr[0].toUpperCase() + attr.slice(1),
+          name: attr,
           value: player.stats[attr as Attribute].toString(),
           inline: true,
         });
@@ -352,18 +353,6 @@ export class UserInterface {
     // Uses a helper function to await the collect event on the collector and return the event
     const res: ButtonInteraction = await waitUntilEvent(collector, "collect");
     return res;
-  }
-
-  // A helper for constructing a simple embed message
-  async niceMessage(
-    title: string,
-    description: string,
-    additionalMessageOptions?: MessageOptions,
-  ) {
-    return this.channel.send({
-      ...additionalMessageOptions,
-      embeds: [{ title, description }],
-    });
   }
 
   /* Statically define the buttons to prompt continue or exit */

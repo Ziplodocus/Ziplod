@@ -70,10 +70,8 @@ export async function zumborInit(msg: ExtendedMessage) {
 
     ui.niceMessage(`${player.name} retires for now...`, '');
     let saveResult = await saveManager.save(player.data);
-
     runningGames.delete(msg.message.author.id);
 
-    console.log('Save successful?:' + saveResult);
     break;
   }
 }
