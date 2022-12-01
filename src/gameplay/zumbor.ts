@@ -19,11 +19,11 @@ export async function zumborInit(msg: ExtendedMessage) {
   if (runningGames.has(msg.message.author.id)) return msg.message.reply('You already have a Zumbor instance running dumbo.');
   runningGames.add(msg.message.author.id);
   // Define our helper classes
-  const saveManager = new SaveManager(msg.message.author.tag);
+  const saveFile = new SaveManager(msg.message.author.tag);
   const ui = new UserInterface(msg);
 
   // Load existing player data, or create a new player
-  let playerData: Error | PlayerData = await saveManager.load();
+  let playerData: Error | PlayerData = await saveFile.load();
   if (playerData instanceof Error) playerData = await ui.newPlayer();
   else ui.sendPlayerInfo(playerData);
   const player = new Player(playerData);
@@ -61,6 +61,8 @@ export async function zumborInit(msg: ExtendedMessage) {
       const didWin = await scoreboard.set(player.data);
       if (didWin instanceof Error) return console.warn(didWin);
       didWin ? ui.niceMessage('Winner!', 'You\'ve made the board') : ui.niceMessage('Lose!', 'I knew you wouldn\'t make it');
+      runningGames.delete(player.user)
+      saveFile.remove();
       break;
     }
 
@@ -69,7 +71,8 @@ export async function zumborInit(msg: ExtendedMessage) {
     if (interaction?.customId === "continue") continue;
 
     ui.niceMessage(`${player.name} retires for now...`, '');
-    let saveResult = await saveManager.save(player.data);
+    let saveResult = await saveFile.save(player.data);
+    console.log('Saved ?: ' + saveResult);
     runningGames.delete(msg.message.author.id);
 
     break;

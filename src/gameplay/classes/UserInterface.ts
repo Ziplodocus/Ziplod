@@ -127,7 +127,7 @@ export class UserInterface {
         return getNewPlayerStats();
       }
 
-
+      console.log(charStats);
       return charStats as unknown as PlayerStats;
     };
     const charStats = await getNewPlayerStats();
@@ -137,7 +137,7 @@ export class UserInterface {
       health: 15,
       score: 0,
       stats: charStats,
-      user: ""
+      user: this.user.tag
     };
 
     statRes?.reply({

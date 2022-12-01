@@ -14,7 +14,6 @@ export class ScoreBoard {
     Retrieves the scoreboard file and caches it in memory
     */
     async get(): Promise<PlayerData[] | Error> {
-        if (this.cache) return this.cache;
         const res = await Files.get(this.path);
         if (res instanceof Error404) {
             await Files.add(this.path, stringToStream('[]'));
@@ -48,7 +47,7 @@ export class ScoreBoard {
         // Insert the current player at the position in which it beats a player on the board
         // Then remove the last place player
         for (const [position, scoredPlayer] of scores.entries()) {
-            if (score < scoredPlayer.score) continue;
+        if (score < scoredPlayer.score) continue;
             scores.splice(position, 0, player);
             console.log(scores.pop()?.name + ' is gone!');
             break;

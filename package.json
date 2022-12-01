@@ -29,13 +29,13 @@
     "@discordjs/rest": "^0.1.0-canary.0",
     "@discordjs/voice": "^0.6.0",
     "@google-cloud/storage": "^6.2.2",
+    "@ziplodocus/zumbor-types": "^1.0.14",
     "discord.js": "^13.1.0",
     "ffmpeg-static": "^4.4.0",
     "libsodium-wrappers": "^0.7.9"
   },
   "devDependencies": {
     "@types/ffmpeg-static": "^3.0.1",
-    "@ziplodocus/zumbor-types": "^1.0.12",
     "concurrently": "^7.4.0",
     "discord-api-types": "^0.37.3",
     "nodemon": "^2.0.19"

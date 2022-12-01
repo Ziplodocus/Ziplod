@@ -1,5 +1,4 @@
 import ExtendedMessage from "../../../../../classes/ExtendedMessage.js";
-import { Player } from "../../../../../gameplay/classes/Player.js";
 import { getChannelMessager } from "../../../../../gameplay/helpers.js";
 import { scoreboard } from "../../../../../gameplay/zumbor.js";
 
@@ -21,7 +20,7 @@ export default async function(message: ExtendedMessage) {
         embeds: scores.map((player, i) => {
             return {
                 color: positionColours[i],
-                title: `${player.name}`,
+                title: `${player.name} - Score ${player.score} - ${player.user}`,
                 description: player.description,
                 fields: Object.entries(player.stats).map(tuple => {
                     return {
