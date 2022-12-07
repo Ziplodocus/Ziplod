@@ -8,9 +8,10 @@ import { ButtonInteraction } from "discord.js";
 import { EncounterManager } from "./classes/EncounterManager.js";
 import { Files } from "../ziplod.js";
 import { ScoreBoard } from "./classes/ScoreBoard.js";
+import { rollD } from "./helpers.js";
 
 
-const encounters = new EncounterManager(Files);
+export const encounters = new EncounterManager(Files);
 export const scoreboard = new ScoreBoard();
 // Tracks running game instances to prevent one player creating multiple instances
 const runningGames: Set<string> = new Set();
@@ -25,7 +26,11 @@ export async function zumborInit(msg: ExtendedMessage) {
   // Load existing player data, or create a new player
   let playerData: Error | PlayerData = await saveFile.load();
   if (playerData instanceof Error) playerData = await ui.newPlayer();
-  else ui.sendPlayerInfo(playerData);
+  if (playerData instanceof Error) {
+    runningGames.delete(msg.message.author.id);
+    return;
+  }
+
   const player = new Player(playerData);
 
   let interaction: ButtonInteraction | undefined;
@@ -44,14 +49,18 @@ export async function zumborInit(msg: ExtendedMessage) {
     let option = encounter.options[interaction.customId];
 
     // Determine outcome
-    const roll = player.roll(option.stat);
-    console.log(`You rolled ${roll}`);
-    console.log(`You needed ${option.threshold}`);
-    const isSuccess = roll > option.threshold;
+    let roll = rollD(20);
+    const criticalFail = roll === 1 ? true : false;
+    roll += player.stats[option.stat];
+
+    console.log(`${player.name} rolled ${roll}`);
+    console.log(`${player.name} needed ${option.threshold}`);
+    const isSuccess = !criticalFail && roll > option.threshold;
 
     const result = option[EncounterResult[isSuccess ? "SUCCESS" : "FAIL"]];
 
     // Handles the results of the encounter
+    if (criticalFail) result.potency *= 2;
     player[result.effect](result.potency);
     player.incrementScore();
     await ui.endEncounter(result, player, interaction);
@@ -61,7 +70,7 @@ export async function zumborInit(msg: ExtendedMessage) {
       const didWin = await scoreboard.set(player.data);
       if (didWin instanceof Error) return console.warn(didWin);
       didWin ? ui.niceMessage('Winner!', 'You\'ve made the board') : ui.niceMessage('Lose!', 'I knew you wouldn\'t make it');
-      runningGames.delete(player.user)
+      runningGames.delete(msg.message.author.id)
       saveFile.remove();
       break;
     }

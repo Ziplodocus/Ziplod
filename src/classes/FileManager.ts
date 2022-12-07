@@ -101,7 +101,7 @@ export class FileManager implements AssetManager {
     }
 
     const file = this.bucket.file(path);
-
+    if (!(await file.exists())) return new Error404('File does not exist!');
     console.log(`Removing ${file.name}...`);
     const delResult = await file.delete();
     if (delResult instanceof Error) {

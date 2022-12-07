@@ -14,21 +14,28 @@ export default async function(message: ExtendedMessage) {
     const scores = await scoreboard.get();
     if (scores instanceof Error) return console.error(scores);
     const send = getChannelMessager(message.message.channel);
-    console.log(scores);
+
     if (scores.length === 0) return send('Scoreboard is empty!', 'Even you might be able to make the board if you play now...');
     message.message.channel.send({
         embeds: scores.map((player, i) => {
             return {
                 color: positionColours[i],
-                title: `${player.name} - Score ${player.score} - ${player.user}`,
+                title: `${player.name} - ${player.user}`,
                 description: player.description,
-                fields: Object.entries(player.stats).map(tuple => {
-                    return {
-                        name: tuple[0],
-                        value: tuple[1].toString(),
+                fields: [
+                    {
+                        name: 'Score',
+                        value: player.score.toString(),
                         inline: true
-                    };
-                })
+                    },
+                    ...Object.entries(player.stats).map(tuple => {
+                        return {
+                            name: tuple[0],
+                            value: tuple[1].toString(),
+                            inline: true
+                        };
+                    })
+                ]
             };
         })
     }

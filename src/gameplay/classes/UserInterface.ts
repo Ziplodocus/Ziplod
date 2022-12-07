@@ -38,7 +38,7 @@ type DiscordChannel =
 
 // Handles messaging the user and returning their responses
 export class UserInterface {
-  niceMessage: (title: string, description: string, additionalMessageOptions?: MessageOptions | undefined) => Promise<Message<boolean>>;
+  niceMessage: ReturnType<typeof getChannelMessager>;
   channel: DiscordChannel;
   user: User;
   constructor(msg: ExtendedMessage) {
@@ -50,7 +50,7 @@ export class UserInterface {
   /*
   Gets the information required to start a new character
   */
-  async newPlayer(): Promise<PlayerData> {
+  async newPlayer(): Promise<PlayerData | Error> {
     // Send a message containing a button to begin character creation
     const message = await this.channel.send({
       embeds: [{
@@ -85,11 +85,12 @@ export class UserInterface {
     const statsMessage: Message = await modalRes.reply(this.statsRequestMsg(charDetails.name, charDetails.description));
     i = await this.response(statsMessage);
 
-    let statRes: ModalSubmitInteraction | undefined;
+    let statRes: ModalSubmitInteraction | undefined | Error;
     // Keep requesting until stats are valid
-    const getNewPlayerStats: () => Promise<PlayerStats> = async () => {
+    const getNewPlayerStats: () => Promise<PlayerStats | Error> = async () => {
       const statModal = new NewPlayerStatsModal();
       statRes = await statModal.response(i, this.user.id);
+      if (statRes instanceof Error) return statRes;
       const maybeCharStats = statModal.fields;
       let charStats: Record<string, number> = {};
 
@@ -131,6 +132,7 @@ export class UserInterface {
       return charStats as unknown as PlayerStats;
     };
     const charStats = await getNewPlayerStats();
+    if (charStats instanceof Error) return charStats
 
     const player: PlayerData = {
       ...charDetails,
@@ -140,6 +142,7 @@ export class UserInterface {
       user: this.user.tag
     };
 
+    if (statRes instanceof Error) return statRes;
     statRes?.reply({
       embeds: [this.playerToEmbedOptions(player)]
     });
@@ -175,6 +178,7 @@ export class UserInterface {
         components: [],
         embeds: [
           ...interaction.message.embeds,
+          { title: `${playerData.name} chose to ${interaction.customId}` },
           this.resultToEmbedOptions(result),
           this.playerToEmbedOptions(playerData, {
             showDesc: false,
@@ -287,6 +291,11 @@ export class UserInterface {
     if (options.showStats) {
       fields = [];
       fields.push({
+        name: "Score",
+        value: player.score.toString(),
+        inline: true,
+      });
+      fields.push({
         name: "Health",
         value: player.health.toString(),
         inline: true,
@@ -301,7 +310,7 @@ export class UserInterface {
     }
     return {
       title: options.showTitle
-        ? `${player.name} is on a ${player.score} encounter streak!`
+        ? `${player.name} - ${player.user}`
         : undefined,
       description: options.showDesc ? player.description : undefined,
       color: [
