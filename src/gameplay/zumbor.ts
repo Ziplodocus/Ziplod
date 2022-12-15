@@ -51,11 +51,12 @@ export async function zumborInit(msg: ExtendedMessage) {
     // Determine outcome
     let roll = rollD(20);
     const criticalFail = roll === 1 ? true : false;
+    const criticalWin = roll === 20 ? true : false;
     roll += player.stats[option.stat];
 
     console.log(`${player.name} rolled ${roll}`);
     console.log(`${player.name} needed ${option.threshold}`);
-    const isSuccess = !criticalFail && roll > option.threshold;
+    const isSuccess = criticalWin || ( !criticalFail && ( roll > option.threshold ));
 
     const result = option[EncounterResult[isSuccess ? "SUCCESS" : "FAIL"]];
 
