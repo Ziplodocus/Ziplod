@@ -42,10 +42,9 @@ export class ScoreBoard {
             this.update(scores);
             return true;
         }
-        console.log('Score cache before update: ');
-        console.log(this.cache);
 
         let didWin = false;
+
         // Insert the current player at the position in which it beats a player on the board
         // Then remove the last place player
         for (const [position, scoredPlayer] of scores.entries()) {
@@ -57,12 +56,10 @@ export class ScoreBoard {
             console.log(scores.pop()?.name + ' is gone!');
             break;
         };
-        console.log('Scores to be uploaded');
-        console.log(scores);
+
         const result = await this.update(scores);
         if (result instanceof Error) return result;
-        console.log('Score cache after update: ');
-        console.log(this.cache);
+
         return didWin;
     }
 

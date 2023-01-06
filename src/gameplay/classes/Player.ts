@@ -47,10 +47,10 @@ export class Player extends EventEmitter
   };
 
   addEffect(effect: LingeringEffect, suppressEvents = false) {
-    //@ts-ignore There is actually an overlap in these types
+    // @ts-ignore There is actually an overlap in these types
     if (Object.values(Attribute).includes(effect.name)) {
-      console.log(effect.name);
-      //@ts-ignore Actually typescript, this is the case.
+      console.log('Adding effect ' + effect.name);
+      // @ts-ignore Actually typescript, this is the case.
       const stat = effect.name as Attribute;
       if (effect.type === LingeringEffectType.BUFF) {
         this.stats[stat] += effect.potency;
@@ -66,7 +66,7 @@ export class Player extends EventEmitter
 
     //@ts-ignore There is actually an overlap in these types
     if (Object.values(Attribute).includes(effect.name)) {
-      console.log(effect.name);
+      console.log('Removing effect ' + effect.name);
       //@ts-ignore Actually typescript, this is the case.
       const stat = effect.name as Attribute;
       if (effect.type === LingeringEffectType.BUFF) {
