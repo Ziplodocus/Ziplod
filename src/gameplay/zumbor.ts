@@ -2,13 +2,13 @@ import { Player } from "./classes/Player.js";
 import { SaveManager } from "./classes/SaveManager.js";
 
 import ExtendedMessage from "../classes/ExtendedMessage.js";
-import { EncounterResult, PlayerData } from "@ziplodocus/zumbor-types";
+import { EncounterResult, PlayerData, Effect, EffectOptions } from "@ziplodocus/zumbor-types";
 import { UserInterface } from "./classes/UserInterface.js";
 import { ButtonInteraction } from "discord.js";
 import { EncounterManager } from "./classes/EncounterManager.js";
 import { Files } from "../ziplod.js";
 import { ScoreBoard } from "./classes/ScoreBoard.js";
-import { rollD } from "./helpers.js";
+import { rollCheck } from "./helpers.js";
 
 
 export const encounters = new EncounterManager(Files);
@@ -33,10 +33,16 @@ export async function zumborInit(msg: ExtendedMessage) {
 
   const player = new Player(playerData);
 
-  let interaction: ButtonInteraction | undefined;
+  // Player events
+  player.on('poison_healed', () => {
+    ui.queueMessage(`${player.name}'s poison has been healed!`);
+  });
 
   // Game loop
   while (true) {
+    // Allows interaction to be mutated and referenced from this scope
+    let interaction: ButtonInteraction | undefined;
+
     const encounter = await encounters.get();
     if (encounter instanceof Error) {
       console.error(encounter);
@@ -45,33 +51,31 @@ export async function zumborInit(msg: ExtendedMessage) {
     // Show user encounter text and give options, wait for user input
     interaction = await ui.startEncounter(encounter);
 
-    // Roll for the encounter option selected and trigger success/fail on encounter
     let option = encounter.options[interaction.customId];
 
-    // Determine outcome
-    let roll = rollD(20);
-    const criticalFail = roll === 1 ? true : false;
-    const criticalWin = roll === 20 ? true : false;
-    roll += player.stats[option.stat];
+    const rollResult = rollCheck(option.threshold, player.stats[option.stat]);
 
-    console.log(`${player.name} rolled ${roll}`);
-    console.log(`${player.name} needed ${option.threshold}`);
-    const isSuccess = criticalWin || ( !criticalFail && ( roll > option.threshold ));
+    const result = option[EncounterResult[rollResult.success ? "SUCCESS" : "FAIL"]];
 
-    const result = option[EncounterResult[isSuccess ? "SUCCESS" : "FAIL"]];
+    if (rollResult.critical) result.potency *= 2;
 
-    // Handles the results of the encounter
-    if (criticalFail) result.potency *= 2;
-    player[result.effect](result.potency);
+    player[result.baseEffect.name](result.baseEffect.potency);
+    player.iterateEffects();
     player.incrementScore();
+
     await ui.endEncounter(result, player, interaction);
 
     if (player.health <= 0) {
       ui.death();
+
+      // Scoreboard handling
       const didWin = await scoreboard.set(player.data);
       if (didWin instanceof Error) return console.warn(didWin);
-      didWin ? ui.niceMessage('Winner!', 'You\'ve made the board') : ui.niceMessage('Lose!', 'I knew you wouldn\'t make it');
-      runningGames.delete(msg.message.author.id)
+      if (didWin) ui.niceMessage('Winner!', 'You\'ve made the board');
+      else ui.niceMessage('Lose!', 'I knew you wouldn\'t make it');
+
+      // Save file handling
+      runningGames.delete(msg.message.author.id);
       saveFile.remove();
       break;
     }

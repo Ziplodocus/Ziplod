@@ -1,9 +1,9 @@
-import { EventEmitter, rollD } from "../helpers.js";
-import { Attribute, PlayerData, PlayerEffect } from "@ziplodocus/zumbor-types";
-import { NewPlayerStatsModal } from "./Modals/NewPlayerStatsModal.js";
+import { EventEmitter } from "../helpers.js";
+import { Attribute, PlayerData, Effect, EffectOptions, LingeringEffectKey } from "@ziplodocus/zumbor-types";
+import { Error404 } from "../../classes/Errors.js";
 
 type PlayerEffectType = {
-  [key in PlayerEffect]: (...a: any[]) => any;
+  [key in Effect]: (...a: any[]) => any;
 };
 
 export class Player extends EventEmitter
@@ -12,6 +12,11 @@ export class Player extends EventEmitter
   constructor(data: PlayerData) {
     super();
     this._data = data;
+
+    // Prefill data with effects if not already there
+    for (let effect in EffectKey) {
+      if (!this.data.effects.has(EffectKey[effect as keyof Effect])) this.data.effects.set(EffectKey[effect], []);
+    }
   }
   get user() {
     return this._data.user;
@@ -34,16 +39,63 @@ export class Player extends EventEmitter
   get stats() {
     return this._data.stats;
   }
-
-  roll(attr: Attribute) {
-    return rollD(20, this.stats[attr]);
+  get effects() {
+    return this._data.effects;
   }
-  incrementScore() {
-    this._data.score++;
+  getEffects(effectName: LingeringEffectKey): EffectOptions[] {
+    return this.effects.get(effectName) as Set<LingeringEffect>;
+  }
+  hasEffects(effectName: LingeringEffectKey) {
+    return this.getEffects(effectName).size !== 0;
+  };
+  addEffect(effect: LingeringEffect) {
+    this.getEffects(effect.name).set(effect);
+  }
+  removeEffect(effect: LingeringEffect) {
+    this.getEffects(effect.name).delete(effect);
   }
 
-  "Damage" = (n = 1) => this._data.health -= n;
-  "Heal" = (n = 1) => this._data.health += n;
+  addScore(n = 1) {
+    this._data.score += n;
+  }
+
+  iterateEffects() {
+    // Run relevant effect related functions
+    player.effects.forEach((effectList, effectName) => {
+      effectList.forEach(effect => {
+        switch (effectName) {
+          case LingeringEffectKey.AGILITY:
+          case LingeringEffectKey.CHARISMA:
+          case LingeringEffectKey.STRENGTH:
+          case LingeringEffectKey.WISDOM:
+            break;
+          case LingeringEffectKey.POISON:
+            const { potency, duration } = effect;
+            player[Effect.DAMAGE](poisonDamage);
+            ui.queueMessage(`${player.name} takes ${poisonDamage} poison damage`);
+            poisonedEffect.duration -= 1;
+            if (poisonedEffect.duration === 0) ui.queueMessage(`You feel better now`);
+        }
+        effect.duration--;
+        if (effect.duration <= 0) this.removeEffect(effect);
+      });
+
+
+    });
+
+    if (player.effects.has(Effect.POISON)) {
+
+    }
+  }
+
+  "Damage" = (amount = 1) => this._data.health -= amount;
+  "Heal" = (amount = 1) => {
+    if (this.hasEffect(Effect.POISON)) {
+      this.effects.set(Effect.POISON, []);
+      this.trigger('poison_healed', null);
+    }
+    this._data.health += amount;
+  };
   "No effect" = (_: any) => {};
   "Charisma" = (n = 1) => this._data.stats[Attribute.CHARISMA] += n;
   "Strength" = (n = 1) => this._data.stats[Attribute.STRENGTH] += n;

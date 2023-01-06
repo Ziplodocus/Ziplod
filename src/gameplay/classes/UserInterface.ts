@@ -5,6 +5,7 @@ import {
   Message,
   MessageActionRow,
   MessageButton,
+  MessageEmbed,
   MessageEmbedOptions,
   MessageOptions,
   ModalSubmitInteraction,
@@ -41,10 +42,23 @@ export class UserInterface {
   niceMessage: ReturnType<typeof getChannelMessager>;
   channel: DiscordChannel;
   user: User;
+  queuedEmbeds: (MessageEmbed | MessageEmbedOptions)[];
   constructor(msg: ExtendedMessage) {
     this.channel = msg.message.channel;
     this.user = msg.message.author;
     this.niceMessage = getChannelMessager(this.channel);
+    this.queuedEmbeds = [];
+  }
+
+  queueMessage(title: string, description?: string) {
+    return { title, description };
+  }
+  retrieveQueuedEmbeds() {
+    const embeds = [...this.queuedEmbeds];
+    console.log(embeds);
+    this.queuedEmbeds = [];
+    console.log(embeds);
+    return embeds;
   }
 
   /*
@@ -132,14 +146,15 @@ export class UserInterface {
       return charStats as unknown as PlayerStats;
     };
     const charStats = await getNewPlayerStats();
-    if (charStats instanceof Error) return charStats
+    if (charStats instanceof Error) return charStats;
 
     const player: PlayerData = {
       ...charDetails,
       health: 15,
       score: 0,
       stats: charStats,
-      user: this.user.tag
+      user: this.user.tag,
+      effects: new Map()
     };
 
     if (statRes instanceof Error) return statRes;
@@ -178,6 +193,7 @@ export class UserInterface {
         components: [],
         embeds: [
           ...interaction.message.embeds,
+          ...this.retrieveQueuedEmbeds(),
           { title: `${playerData.name} chose to ${interaction.customId}` },
           this.resultToEmbedOptions(result),
           this.playerToEmbedOptions(playerData, {
