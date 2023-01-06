@@ -2,7 +2,7 @@ import { Player } from "./classes/Player.js";
 import { SaveManager } from "./classes/SaveManager.js";
 
 import ExtendedMessage from "../classes/ExtendedMessage.js";
-import { EncounterResult, PlayerData, Effect, EffectOptions } from "@ziplodocus/zumbor-types";
+import { EncounterResult, PlayerData } from "@ziplodocus/zumbor-types";
 import { UserInterface } from "./classes/UserInterface.js";
 import { ButtonInteraction } from "discord.js";
 import { EncounterManager } from "./classes/EncounterManager.js";
@@ -34,6 +34,12 @@ export async function zumborInit(msg: ExtendedMessage) {
   const player = new Player(playerData);
 
   // Player events
+  player.on('effect_start', ({ player, effect }) => {
+    ui.queueMessage(`${player.name} has received a ${effect.name} ${effect.type}`);
+  })
+  player.on('effect_end', ({ player, effect }) => {
+    ui.queueMessage(`${effect.name} ${effect.type} has been removed from ${player.name}`);
+  })
   player.on('poison_healed', () => {
     ui.queueMessage(`${player.name}'s poison has been healed!`);
   });
@@ -48,6 +54,7 @@ export async function zumborInit(msg: ExtendedMessage) {
       console.error(encounter);
       break;
     }
+    console.dir(encounter.options);
     // Show user encounter text and give options, wait for user input
     interaction = await ui.startEncounter(encounter);
 
@@ -57,15 +64,19 @@ export async function zumborInit(msg: ExtendedMessage) {
 
     const result = option[EncounterResult[rollResult.success ? "SUCCESS" : "FAIL"]];
 
-    if (rollResult.critical) result.potency *= 2;
+    if (result.baseEffect) {
+      if (rollResult.critical) result.baseEffect.potency *= 2;
 
-    player[result.baseEffect.name](result.baseEffect.potency);
+      player[result.baseEffect.name](result.baseEffect.potency);
+    }
+
     player.iterateEffects();
-    player.incrementScore();
+    player.addScore(1);
 
     await ui.endEncounter(result, player, interaction);
 
     if (player.health <= 0) {
+      player.removeAllEffects(true);
       ui.death();
 
       // Scoreboard handling

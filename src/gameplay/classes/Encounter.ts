@@ -2,7 +2,7 @@ import {
   Attribute,
   EncounterData,
   EncounterResult,
-  Effect,
+  EffectKey,
 } from "@ziplodocus/zumbor-types";
 
 
@@ -15,20 +15,24 @@ export async function random(): Promise<EncounterData> {
       "Fight": {
         threshold: 8,
         stat: Attribute.STRENGTH,
-        Success: {
+        "Success": {
           type: EncounterResult.SUCCESS,
           title: "Goblin pancakes for dinner!",
           text:
             "You made short work of that goblin. You can wear it's ears as a prank",
-          effect: Effect.CHARISMA,
-          potency: 1,
+          baseEffect: {
+            name: EffectKey.CHARISMA,
+            potency: 1,
+          },
         },
-        Fail: {
+        "Fail": {
           type: EncounterResult.FAIL,
           title: "Oof",
           text: "That Gobbo was tougher than he looked...",
-          effect: Effect.DAMAGE,
-          potency: 3,
+          baseEffect: {
+            name: EffectKey.DAMAGE,
+            potency: 3,
+          },
         },
       },
       "Run": {
@@ -38,15 +42,19 @@ export async function random(): Promise<EncounterData> {
           type: EncounterResult.SUCCESS,
           title: "You escaped!",
           text: "Guess you didn't fancy your chances.",
-          effect: Effect.HEAL,
-          potency: 1,
+          baseEffect: {
+            name: EffectKey.HEAL,
+            potency: 1,
+          },
         },
         "Fail": {
           type: EncounterResult.FAIL,
           title: "Agh!",
           text: "Gobbo stabbed you in the back, yikes, and he's gotten away with it too!",
-          effect: Effect.DAMAGE,
-          potency: 5,
+          baseEffect: {
+            name: EffectKey.DAMAGE,
+            potency: 5,
+          },
         },
       },
     },

@@ -1,5 +1,14 @@
 import { FileManager } from "../../classes/FileManager.js";
-import { EncounterData, validateEncounterData } from "@ziplodocus/zumbor-types";
+import { Effect, EffectKey, EncounterData, EncounterOptionResult, EncounterResult, validateEncounterData } from "@ziplodocus/zumbor-types";
+import { stringToStream } from "../../utility/other.js";
+
+export type LegacyEncounterOptionResult = {
+  type: EncounterResult;
+  title: string;
+  text: string;
+  effect: EffectKey;
+  potency: number;
+};
 
 export class EncounterManager {
   storage: FileManager;
@@ -29,7 +38,41 @@ export class EncounterManager {
       try {
         const res = await file.download();
         const resolved = res.toString();
-        const encounter = JSON.parse(resolved);
+        const encounter = JSON.parse(resolved) as EncounterData;
+
+        // Convert legacy encounters to new data structure
+        let legacyOption = false;
+        Object.values(encounter.options).forEach(option => {
+          Object.values(EncounterResult).forEach(resultType => {
+            let result = option[resultType] as LegacyEncounterOptionResult | EncounterOptionResult;
+            if ('effect' in result) {
+              legacyOption = true;
+
+              const baseEffect: Effect = {
+                name: result.effect,
+                potency: result.potency,
+              };
+
+              option[resultType] = {
+                title: result.title,
+                text: result.text,
+                type: result.type,
+                baseEffect
+              } as EncounterOptionResult;
+            }
+
+            // @ts-ignore Possible for legacy effects
+            if (option[resultType]?.baseEffect?.name === 'No effect') {
+              delete option[resultType].baseEffect;
+            }
+          });
+        });
+
+        if (legacyOption) {
+          const updatedEncounterTextStream = stringToStream(JSON.stringify(encounter));
+          updatedEncounterTextStream.pipe( file.createWriteStream() );
+        }
+
         const validData = validateEncounterData(encounter);
         if (validData instanceof Error) {
           console.warn('JSON is invalid: ' + file.name);

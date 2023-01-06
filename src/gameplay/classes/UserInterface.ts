@@ -23,6 +23,8 @@ import {
   EncounterData,
   EncounterOptionResult,
   EncounterResult,
+  LingeringEffect,
+  LingeringEffectKey,
   PlayerData,
   PlayerStats,
 } from "@ziplodocus/zumbor-types";
@@ -148,13 +150,18 @@ export class UserInterface {
     const charStats = await getNewPlayerStats();
     if (charStats instanceof Error) return charStats;
 
+    const emptyEffects: Record<string, LingeringEffect[]> = {};
+    Object.values(LingeringEffectKey).forEach(key => {
+      emptyEffects[key] = [];
+    })
+
     const player: PlayerData = {
       ...charDetails,
       health: 15,
       score: 0,
       stats: charStats,
       user: this.user.tag,
-      effects: new Map()
+      effects: emptyEffects as Record<LingeringEffectKey, LingeringEffect[]>
     };
 
     if (statRes instanceof Error) return statRes;
@@ -276,20 +283,23 @@ export class UserInterface {
   private resultToEmbedOptions(
     result: EncounterOptionResult,
   ): MessageEmbedOptions {
-    return {
+    const embed : MessageEmbedOptions = {
       title: result.title,
       description: result.text,
       color: result.type === EncounterResult.SUCCESS
         ? [20, 240, 60]
         : [240, 40, 20],
-      fields: [
+    }
+    if (result.baseEffect) {
+      embed.fields = [
         {
-          name: result.effect,
-          value: (result.potency > 0 ? "+" : "") + result.potency.toString(),
+          name: result.baseEffect.name,
+          value: (result.baseEffect.potency > 0 ? "+" : "") + result.baseEffect.potency.toString(),
           inline: true,
-        },
-      ],
-    };
+        }
+      ]
+    }
+    return embed;
   }
 
   // Creates an embed object from the player options

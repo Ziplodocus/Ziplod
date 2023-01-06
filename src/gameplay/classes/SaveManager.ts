@@ -1,6 +1,6 @@
 import { streamToString, stringToStream } from "../../utility/other.js";
 import { Files } from "../../ziplod.js";
-import { PlayerData } from "@ziplodocus/zumbor-types";
+import { PlayerData, validatePlayerData } from "@ziplodocus/zumbor-types";
 import { Error404 } from "../../classes/Errors.js";
 
 export class SaveManager {
@@ -47,6 +47,9 @@ export class SaveManager {
     if (res instanceof Error) return res;
 
     const textData = await streamToString(res);
-    return JSON.parse(textData);
+    const potentialPlayerData = JSON.parse(textData);
+    console.dir(potentialPlayerData);
+    const validatedData = validatePlayerData(potentialPlayerData);
+    return validatedData;
   }
 }

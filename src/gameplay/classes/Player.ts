@@ -1,9 +1,9 @@
 import { EventEmitter } from "../helpers.js";
-import { Attribute, PlayerData, Effect, EffectOptions, LingeringEffectKey } from "@ziplodocus/zumbor-types";
+import { Attribute, PlayerData, EffectKey, LingeringEffect, LingeringEffectType, LingeringEffectKey } from "@ziplodocus/zumbor-types";
 import { Error404 } from "../../classes/Errors.js";
 
 type PlayerEffectType = {
-  [key in Effect]: (...a: any[]) => any;
+  [key in EffectKey]: (...args: any) => any;
 };
 
 export class Player extends EventEmitter
@@ -12,11 +12,6 @@ export class Player extends EventEmitter
   constructor(data: PlayerData) {
     super();
     this._data = data;
-
-    // Prefill data with effects if not already there
-    for (let effect in EffectKey) {
-      if (!this.data.effects.has(EffectKey[effect as keyof Effect])) this.data.effects.set(EffectKey[effect], []);
-    }
   }
   get user() {
     return this._data.user;
@@ -42,61 +37,91 @@ export class Player extends EventEmitter
   get effects() {
     return this._data.effects;
   }
-  getEffects(effectName: LingeringEffectKey): EffectOptions[] {
-    return this.effects.get(effectName) as Set<LingeringEffect>;
+
+  getEffects(effectName: LingeringEffectKey) {
+    return this.effects[effectName];
   }
+
   hasEffects(effectName: LingeringEffectKey) {
-    return this.getEffects(effectName).size !== 0;
+    return this.getEffects(effectName).length !== 0;
   };
-  addEffect(effect: LingeringEffect) {
-    this.getEffects(effect.name).set(effect);
+
+  addEffect(effect: LingeringEffect, suppressEvents = false) {
+    //@ts-ignore There is actually an overlap in these types
+    if (Object.values(Attribute).includes(effect.name)) {
+      console.log(effect.name);
+      //@ts-ignore Actually typescript, this is the case.
+      const stat = effect.name as Attribute;
+      if (effect.type === LingeringEffectType.BUFF) {
+        this.stats[stat] += effect.potency;
+      } else if (effect.type === LingeringEffectType.DEBUFF) {
+        this.stats[stat] -= effect.potency;
+      }
+    }
+
+    this.getEffects(effect.name).push(effect);
+    if (!suppressEvents) this.trigger(`effect_started`, { player: this, effect });
   }
-  removeEffect(effect: LingeringEffect) {
-    this.getEffects(effect.name).delete(effect);
+  removeEffect(effect: LingeringEffect, suppressEvents = false) {
+
+    //@ts-ignore There is actually an overlap in these types
+    if (Object.values(Attribute).includes(effect.name)) {
+      console.log(effect.name);
+      //@ts-ignore Actually typescript, this is the case.
+      const stat = effect.name as Attribute;
+      if (effect.type === LingeringEffectType.BUFF) {
+        this.stats[stat] -= effect.potency;
+      } else if (effect.type === LingeringEffectType.DEBUFF) {
+        this.stats[stat] += effect.potency;
+      }
+    }
+
+    const effects = this.getEffects(effect.name);
+    effects.splice( effects.indexOf(effect), 1 );
+    if (!suppressEvents) this.trigger(`effect_ended`, { player: this, effect });
+  }
+
+  removeEffects(effectName: LingeringEffectKey, suppressEvents = false) {
+    this.getEffects(effectName).forEach(effect => this.removeEffect(effect, suppressEvents));
+  }
+
+  removeAllEffects(suppressEvents = false) {
+    Object.values(this.effects).forEach(effectList => {
+      effectList.forEach(effect => {
+        if (effect.duration === 0) this.removeEffect(effect, suppressEvents);
+      });
+    });
   }
 
   addScore(n = 1) {
     this._data.score += n;
   }
 
+
   iterateEffects() {
     // Run relevant effect related functions
-    player.effects.forEach((effectList, effectName) => {
+    Object.values(this.effects).forEach(effectList => {
       effectList.forEach(effect => {
-        switch (effectName) {
-          case LingeringEffectKey.AGILITY:
-          case LingeringEffectKey.CHARISMA:
-          case LingeringEffectKey.STRENGTH:
-          case LingeringEffectKey.WISDOM:
-            break;
-          case LingeringEffectKey.POISON:
-            const { potency, duration } = effect;
-            player[Effect.DAMAGE](poisonDamage);
-            ui.queueMessage(`${player.name} takes ${poisonDamage} poison damage`);
-            poisonedEffect.duration -= 1;
-            if (poisonedEffect.duration === 0) ui.queueMessage(`You feel better now`);
+
+        if (effect.name === LingeringEffectKey.POISON) {
+          this[EffectKey.DAMAGE](effect.potency);
+          this.trigger('poison_damage', { player: this, effect });
         }
+
         effect.duration--;
-        if (effect.duration <= 0) this.removeEffect(effect);
+        if (effect.duration === 0) this.removeEffect(effect);
       });
-
-
     });
-
-    if (player.effects.has(Effect.POISON)) {
-
-    }
   }
 
   "Damage" = (amount = 1) => this._data.health -= amount;
   "Heal" = (amount = 1) => {
-    if (this.hasEffect(Effect.POISON)) {
-      this.effects.set(Effect.POISON, []);
-      this.trigger('poison_healed', null);
+    if (this.hasEffects(LingeringEffectKey.POISON)) {
+      this.removeEffects(LingeringEffectKey.POISON);
+      this.trigger('poison_healed', this);
     }
     this._data.health += amount;
   };
-  "No effect" = (_: any) => {};
   "Charisma" = (n = 1) => this._data.stats[Attribute.CHARISMA] += n;
   "Strength" = (n = 1) => this._data.stats[Attribute.STRENGTH] += n;
   "Wisdom" = (n = 1) => this._data.stats[Attribute.WISDOM] += n;
