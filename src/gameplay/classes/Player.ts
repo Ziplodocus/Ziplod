@@ -105,7 +105,12 @@ export class Player extends EventEmitter
 
         if (effect.name === LingeringEffectKey.POISON) {
           this[EffectKey.DAMAGE](effect.potency);
-          this.trigger('poison_damage', { player: this, effect });
+          this.trigger(`${LingeringEffectKey.POISON}_apply`, { player: this, effect });
+        }
+
+        if (effect.name === LingeringEffectKey.REGENERATE) {
+          this[EffectKey.HEAL](effect.potency);
+          this.trigger(`${LingeringEffectKey.REGENERATE}_apply`, { player: this, effect });
         }
 
         effect.duration--;

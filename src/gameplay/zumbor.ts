@@ -2,7 +2,7 @@ import { Player } from "./classes/Player.js";
 import { SaveManager } from "./classes/SaveManager.js";
 
 import ExtendedMessage from "../classes/ExtendedMessage.js";
-import { EncounterResult, PlayerData } from "@ziplodocus/zumbor-types";
+import { EncounterResult, LingeringEffectKey, PlayerData } from "@ziplodocus/zumbor-types";
 import { UserInterface } from "./classes/UserInterface.js";
 import { ButtonInteraction } from "discord.js";
 import { EncounterManager } from "./classes/EncounterManager.js";
@@ -40,9 +40,15 @@ export async function zumborInit(msg: ExtendedMessage) {
   player.on('effect_end', ({ player, effect }) => {
     ui.queueMessage(`${effect.name} ${effect.type} has been removed from ${player.name}`);
   })
-  player.on('poison_healed', () => {
+  player.on(`${LingeringEffectKey.POISON}_healed`, () => {
     ui.queueMessage(`${player.name}'s poison has been healed!`);
   });
+  player.on(`${LingeringEffectKey.POISON}_apply`, ({player, effect}) => {
+    ui.queueMessage(`${player.name} loses ${effect.potency} health to poison`);
+  })
+  player.on(`${LingeringEffectKey.REGENERATE}_apply`, ({player, effect}) => {
+    ui.queueMessage(`${player.name} regenerates ${effect.potency} health`);
+  })
 
   // Game loop
   while (true) {
