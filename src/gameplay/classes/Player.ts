@@ -62,8 +62,8 @@ export class Player extends EventEmitter
     this.getEffects(effect.name).push(effect);
     if (!suppressEvents) this.trigger(`effect_started`, { player: this, effect });
   }
-  removeEffect(effect: LingeringEffect, suppressEvents = false) {
 
+  removeEffect(effect: LingeringEffect, suppressEvents = false) {
     //@ts-ignore There is actually an overlap in these types
     if (Object.values(Attribute).includes(effect.name)) {
       console.log('Removing effect ' + effect.name);

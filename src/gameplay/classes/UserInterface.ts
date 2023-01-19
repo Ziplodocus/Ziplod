@@ -53,7 +53,7 @@ export class UserInterface {
   }
 
   queueMessage(title: string, description?: string) {
-    return { title, description };
+    this.queuedEmbeds.push({ title, description });
   }
   retrieveQueuedEmbeds() {
     const embeds = [...this.queuedEmbeds];
@@ -144,7 +144,6 @@ export class UserInterface {
         return getNewPlayerStats();
       }
 
-      console.log(charStats);
       return charStats as unknown as PlayerStats;
     };
     const charStats = await getNewPlayerStats();
@@ -195,6 +194,7 @@ export class UserInterface {
     playerData: PlayerData,
     interaction: ButtonInteraction,
   ) {
+    console.log(this.queuedEmbeds);
     try {
       await interaction.update({
         components: [],

@@ -4,7 +4,7 @@ import { SaveManager } from "./classes/SaveManager.js";
 import ExtendedMessage from "../classes/ExtendedMessage.js";
 import { EncounterResult, LingeringEffectKey, PlayerData } from "@ziplodocus/zumbor-types";
 import { UserInterface } from "./classes/UserInterface.js";
-import { ButtonInteraction } from "discord.js";
+import { ButtonInteraction, CommandInteractionOptionResolver } from "discord.js";
 import { EncounterManager } from "./classes/EncounterManager.js";
 import { Files } from "../ziplod.js";
 import { ScoreBoard } from "./classes/ScoreBoard.js";
@@ -35,20 +35,21 @@ export async function zumborInit(msg: ExtendedMessage) {
 
   // Player events
   player.on('effect_start', ({ player, effect }) => {
+    console.log('effect started', effect.name);
     ui.queueMessage(`${player.name} has received a ${effect.name} ${effect.type}`);
-  })
+  });
   player.on('effect_end', ({ player, effect }) => {
     ui.queueMessage(`${effect.name} ${effect.type} has been removed from ${player.name}`);
-  })
+  });
   player.on(`${LingeringEffectKey.POISON}_healed`, () => {
     ui.queueMessage(`${player.name}'s poison has been healed!`);
   });
-  player.on(`${LingeringEffectKey.POISON}_apply`, ({player, effect}) => {
+  player.on(`${LingeringEffectKey.POISON}_apply`, ({ player, effect }) => {
     ui.queueMessage(`${player.name} loses ${effect.potency} health to poison`);
-  })
-  player.on(`${LingeringEffectKey.REGENERATE}_apply`, ({player, effect}) => {
+  });
+  player.on(`${LingeringEffectKey.REGENERATE}_apply`, ({ player, effect }) => {
     ui.queueMessage(`${player.name} regenerates ${effect.potency} health`);
-  })
+  });
 
   // Game loop
   while (true) {
@@ -76,6 +77,10 @@ export async function zumborInit(msg: ExtendedMessage) {
       player[result.baseEffect.name](result.baseEffect.potency);
     }
 
+    if (result.additionalEffect) {
+      player.addEffect(result.additionalEffect);
+    }
+
     player.iterateEffects();
     player.addScore(1);
 
@@ -93,7 +98,11 @@ export async function zumborInit(msg: ExtendedMessage) {
 
       // Save file handling
       runningGames.delete(msg.message.author.id);
-      saveFile.remove();
+      try {
+        saveFile.remove();
+      } catch (e) {
+        console.log('Caught save file remove error: ', e);
+      }
       break;
     }
 
